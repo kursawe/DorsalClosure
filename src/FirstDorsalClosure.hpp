@@ -51,7 +51,7 @@ protected:
      * Helper method for CreateCellPopulation. Creates mesh.
      *
      */
-    virtual MutableVertexMesh<2,2>* CreateMesh();
+    virtual boost::shared_ptr< MutableVertexMesh<2,2>> CreateMesh();
 
     /**
      * Helper method for SetupSimulation. Designs the mesh and sets up the cell population

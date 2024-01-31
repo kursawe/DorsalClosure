@@ -68,10 +68,11 @@ void FirstDorsalClosure::DestroySingletons()
     RandomNumberGenerator::Destroy();
 }
 
-MutableVertexMesh<2,2>* FirstDorsalClosure::CreateMesh()
+boost::shared_ptr<MutableVertexMesh<2,2> >  FirstDorsalClosure::CreateMesh()
 {
     mpMeshGenerator.reset( new HoneycombVertexMeshGenerator(6, 6) );
-    MutableVertexMesh<2,2>* p_mesh = mpMeshGenerator->GetMesh();
+
+	boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = mpMeshGenerator->GetMesh();
     return p_mesh;
 }
 
@@ -79,7 +80,7 @@ void FirstDorsalClosure::CreateCellPopulation()
 {
 	std::vector<CellPtr> cells;
 
-    MutableVertexMesh<2,2>* p_mesh;
+    boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh;
 
 	p_mesh = this->CreateMesh();
 	
