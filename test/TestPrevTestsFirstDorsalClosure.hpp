@@ -777,7 +777,7 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestFirstDorsalClosure_boundarytension");
-        simulator.SetSamplingTimestepMultiple(100);
+        simulator.SetSamplingTimestepMultiple(50);
         simulator.SetEndTime(50.0);
         
         //changed parameters are to try and deal with 'hourglass' shape 

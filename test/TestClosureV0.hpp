@@ -56,8 +56,6 @@ class TestFirstDorsalClosure : public AbstractCellBasedTestSuite
 public:
     void TestClosureV02()
     {
-
-        
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10, true);
