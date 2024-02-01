@@ -35,6 +35,7 @@
 #include "FixedVertexBasedDivisionRule.hpp"
 //#include "GammaG1CellCycleModel.hpp"
 #include "RandomCellKiller.hpp"
+#include "MyCellKiller.hpp"
 
 #include <boost/shared_ptr.hpp>
 #include "AbstractCellProperty.hpp"
@@ -53,7 +54,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -105,7 +106,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -187,7 +188,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -285,7 +286,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -390,7 +391,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -497,7 +498,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
 
         std::vector<CellPtr> cells;
 
@@ -546,7 +547,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 7);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -686,7 +687,7 @@ public:
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         //creating cells
         std::vector<CellPtr> cells;
@@ -850,7 +851,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
         
@@ -991,7 +992,7 @@ public:
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
 
         std::vector<CellPtr> cells;
 
@@ -1087,7 +1088,7 @@ public:
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         //creating cells
         std::vector<CellPtr> cells;
@@ -1278,7 +1279,7 @@ public:
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10);
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         //creating cells
         std::vector<CellPtr> cells;

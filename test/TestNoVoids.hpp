@@ -64,7 +64,7 @@ public:
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10, false, 0.01, 0.001, 0.5*sqrt(3.0));
 
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         //creating cells
         std::vector<CellPtr> cells;
@@ -217,7 +217,7 @@ public:
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10, false, 0.01, 0.001, 0.5*sqrt(3.0));
 
-        MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
+        boost::shared_ptr<MutableVertexMesh<2,2> > p_mesh = generator.GetMesh();
         
         //creating cells
         std::vector<CellPtr> cells;
