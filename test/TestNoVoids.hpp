@@ -58,8 +58,6 @@ public:
 //all cell removals are via a T2 swap
     void TestVoids()
     {
-
-        
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
         HoneycombVertexMeshGenerator generator(6, 10, false, 0.01, 0.001, 0.5*sqrt(3.0));
@@ -136,8 +134,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("test_void");
-        simulator.SetSamplingTimestepMultiple(100);
-        simulator.SetEndTime(100.0);
+        simulator.SetSamplingTimestepMultiple(50);
+        simulator.SetEndTime(0.5);
+        simulator.SetDt(0.1);
         
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);

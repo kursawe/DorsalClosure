@@ -558,7 +558,7 @@ std::vector<c_vector<double, 2> > ModifiedVoronoiVertexMeshGenerator::GetInitial
         }
     
     }
-    MARK;
+    //MARK;
     return seed_points;
 }
 

@@ -121,7 +121,7 @@ public:
         simulator.SetOutputDirectory("TestHalfMesh");
         simulator.SetSamplingTimestepMultiple(160);
 		simulator.SetDt(0.01);
-        simulator.SetEndTime(10.0);  //300
+        simulator.SetEndTime(1.0);  //300
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);

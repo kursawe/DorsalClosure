@@ -1,5 +1,5 @@
-#ifndef TESTFIRSTDORSALCLOSURE_HPP_
-#define TESTFIRSTDORSALCLOSURE_HPP_
+#ifndef TESTFIRSTDORSALCLOSUREHELLO_HPP_
+#define TESTFIRSTDORSALCLOSUREHELLO_HPP_
 
 //#include "FirstDorsalClosure.hpp"
 #include "SimulationTime.hpp"
@@ -681,6 +681,7 @@ public:
 
         simulator.Solve();
     }
+
     //test changing parameters to deal with hourglass shape 
     void TestBoundaryTension()
     {
@@ -700,7 +701,7 @@ public:
 
         //trying to label cells as apoptotic
         //boost::shared_ptr<AbstractCellProperty> p_apoptotic(CellPropertyRegistry::Instance()->Get<ApoptoticCellProperty>());
-   
+        
         //cells_generator.GenerateBasicRandom(cells, p_mesh->GetNumElements(), p_transit_type);
 
         //trying to have directed proliferation
@@ -778,8 +779,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestFirstDorsalClosure_boundarytension");
         simulator.SetSamplingTimestepMultiple(50);
-        simulator.SetEndTime(50.0);
-        
+        simulator.SetEndTime(0.5);
+        simulator.SetDt(0.1);
+
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
         p_force->SetBoundaryLineTensionParameter(0.3);      //0.12 default 
@@ -1457,4 +1459,4 @@ public:
     }
 
 };
-#endif /*TESTFIRSTDORSALCLOSURE_HPP_*/
+#endif /*TESTFIRSTDORSALCLOSUREHELLO_HPP_*/

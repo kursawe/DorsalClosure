@@ -155,9 +155,10 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev02");
-        simulator.SetSamplingTimestepMultiple(70);
-        simulator.SetEndTime(110.0);
-        
+        simulator.SetSamplingTimestepMultiple(50);
+        simulator.SetEndTime(0.5);
+        simulator.SetDt(0.1);
+
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
         p_force->SetBoundaryLineTensionParameter(0.3);      //0.12 default 
