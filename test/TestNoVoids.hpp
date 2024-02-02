@@ -208,7 +208,7 @@ public:
         simulator.Solve();
     }
 //trying to improve size of hbs 
-    void xTestSize()
+    void TestSize()
     {
 
         

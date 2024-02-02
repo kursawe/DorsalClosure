@@ -45,7 +45,7 @@ class TestVoronoiMeshV01 : public AbstractCellBasedTestSuite
 {
 public:
     //trying to use voronoi mesh 
-    void xTestVoronoiMesh()
+    void TestVoronoiMesh()
     {
 		//multiply y by 0.7 in myvoronoivertexmeshgenerator
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
@@ -172,7 +172,7 @@ public:
 	    
         simulator.Solve();
     }
-	 void xTestVoronoiMeshBoundaries()
+	 void TestVoronoiMeshBoundaries()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         MyVoronoiVertexMeshGenerator generator(6,10,3,0,3.0);
@@ -643,7 +643,7 @@ public:
 
         simulator.Solve();
     }
-	void xTestVoronoiMeshShape()
+	void TestVoronoiMeshShape()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -755,7 +755,7 @@ public:
 	    
         simulator.Solve();
     }
-	void xTestLECDeath()
+	void TestLECDeath()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);

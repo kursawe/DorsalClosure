@@ -50,7 +50,7 @@ class TestFirstDorsalClosure : public AbstractCellBasedTestSuite
 {
 public:
     //test whether LECs are labelled - show up as different colour in paraview 
-    void xTestCellLabel()
+    void TestCellLabel()
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
@@ -102,7 +102,7 @@ public:
         simulator.Solve();
     }
     //test whether the cells are bounded by a 'box'
-    void xTestBoundary()
+    void TestBoundary()
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
@@ -184,7 +184,7 @@ public:
         MARK;
     }
     //test labelled LECs and boundary together 
-    void xTestLabelandBoundary()
+    void TestLabelandBoundary()
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
@@ -282,7 +282,7 @@ public:
         MARK;
     }
     //test hbs dividing and box boundary 
-    void xTestProliferationandBoundary()
+    void TestProliferationandBoundary()
     {
         
         HoneycombVertexMeshGenerator generator(6, 6);
@@ -387,7 +387,7 @@ public:
         simulator.Solve();
     }
     //test LECs dying and box boundary 
-    void xTestApoptosisandBoundary()
+    void TestApoptosisandBoundary()
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
@@ -494,7 +494,7 @@ public:
         simulator.Solve();
     }
     //test more than one round of cell division 
-    void xTestIncreasedProliferation()
+    void TestIncreasedProliferation()
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
@@ -543,7 +543,7 @@ public:
 
     }
     //test hbs proliferating and LEC death 
-    void xTestProliferationAndDeath()
+    void TestProliferationAndDeath()
     {
         
         HoneycombVertexMeshGenerator generator(6, 7);
@@ -849,7 +849,7 @@ public:
         simulator.Solve();
     }
     //test for proper shape of tissue, apoptosis of LECs, hb proliferation and box boundary
-    void xTestClosure()
+    void TestClosure()
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
@@ -990,7 +990,7 @@ public:
         simulator.Solve();
     }
     //trying to understand the proliferation code
-    void xTestUnderstandingProliferation()
+    void TestUnderstandingProliferation()
     {
         
         HoneycombVertexMeshGenerator generator(6, 10);
@@ -1085,7 +1085,7 @@ public:
 
 
     }
-    void xTestRandomLecDeaths()
+    void TestRandomLecDeaths()
     {
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
@@ -1276,7 +1276,7 @@ public:
 
         simulator.Solve();
     }
-    void xTestRandomDeath()
+    void TestRandomDeath()
     {
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 

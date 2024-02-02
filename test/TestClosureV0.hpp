@@ -228,7 +228,7 @@ public:
 
         simulator.Solve();
     }
-    void xTestSizes()
+    void TestSizes()
     {
 
         
@@ -418,7 +418,7 @@ public:
         simulator.Solve();
     }
     //test to try and remove voids that form as lecs die 
-    void xTestClosureV02_void()
+    void TestClosureV02_void()
     {
         //cell target area = 2.5 for lecs in mytargetareamodifier 
         
@@ -581,7 +581,7 @@ public:
         simulator.Solve();
     }
     //test to try and remove reliance on adjusted parameters 
-    void xTestClosureV02_farhadifar()
+    void TestClosureV02_farhadifar()
     {
 
         
@@ -744,7 +744,7 @@ public:
 
         simulator.Solve();
     }
-    void xTestVoid()
+    void TestVoid()
     {
 
         
