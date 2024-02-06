@@ -43,7 +43,7 @@
 class TestVoronoiMeshHalfSize : public AbstractCellBasedTestSuite
 {
 public:
-    void TestVoronoiMeshHalfSizeV1()
+    void xTestVoronoiMeshHalfSizeV1()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(8,22,6,0,1.0);
@@ -520,7 +520,7 @@ public:
 
         simulator.Solve();
     }
-	void xTestVoronoiSmallerMesh()
+	void TestVoronoiSmallerMesh()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0);
@@ -600,7 +600,7 @@ public:
         simulator.SetOutputDirectory("TestSmallerMesh");
         simulator.SetSamplingTimestepMultiple(10);//160
 		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);  //300//30
+        simulator.SetEndTime(30.0);  //300//30
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
