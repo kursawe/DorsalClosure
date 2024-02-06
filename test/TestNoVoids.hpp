@@ -134,8 +134,8 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("test_void");
-        simulator.SetSamplingTimestepMultiple(50);
-        simulator.SetEndTime(0.5);
+        simulator.SetSamplingTimestepMultiple(10);
+        simulator.SetEndTime(10);
         simulator.SetDt(0.1);
         
         //changed parameters are to try and deal with 'hourglass' shape 
@@ -289,8 +289,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("test_size");
-        simulator.SetSamplingTimestepMultiple(100);
-        simulator.SetEndTime(97.0);
+        simulator.SetSamplingTimestepMultiple(10);
+        simulator.SetEndTime(10.0);
+        simulator.SetDt(0.1);
         
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);

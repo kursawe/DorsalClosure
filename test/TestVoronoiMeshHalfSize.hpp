@@ -119,9 +119,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestHalfMesh");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(1.0);  //300
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1);//0.01
+        simulator.SetEndTime(10.0);  //300
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -279,7 +279,7 @@ public:
 
         simulator.Solve();
     }
-	void TestVoronoiMeshHalfSizeV1_2()
+	void xTestVoronoiMeshHalfSizeV1_2()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(8,22,6,0,1.0);
@@ -355,9 +355,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestHalfMesh_2");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(160.0);  //300
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1);//0.01
+        simulator.SetEndTime(10.0);  //300//160
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -520,7 +520,7 @@ public:
 
         simulator.Solve();
     }
-	void TestVoronoiSmallerMesh()
+	void xTestVoronoiSmallerMesh()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0);
@@ -598,9 +598,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestSmallerMesh");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(30.0);  //300
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1);//0.01
+        simulator.SetEndTime(10.0);  //300//30
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);

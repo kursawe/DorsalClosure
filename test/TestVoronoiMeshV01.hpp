@@ -45,7 +45,7 @@ class TestVoronoiMeshV01 : public AbstractCellBasedTestSuite
 {
 public:
     //trying to use voronoi mesh 
-    void TestVoronoiMesh()
+    void xTestVoronoiMesh()
     {
 		//multiply y by 0.7 in myvoronoivertexmeshgenerator
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
@@ -172,7 +172,7 @@ public:
 	    
         simulator.Solve();
     }
-	 void TestVoronoiMeshBoundaries()
+	 void xTestVoronoiMeshBoundaries()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         MyVoronoiVertexMeshGenerator generator(6,10,3,0,3.0);
@@ -250,9 +250,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestVoronoiMeshBoundaries");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(90.0); 	//97
+        simulator.SetSamplingTimestepMultiple(10); //georgia 160
+		simulator.SetDt(0.1);//georgia 0.01
+        simulator.SetEndTime(10.0); 	//97 //georgia 90
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
 		//p_force->SetBoundaryLineTensionParameter(0.3);      //0.12 default 
@@ -387,9 +387,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestLabelledCells");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(100.0);
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1); //0.01
+        simulator.SetEndTime(5.0); //100
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -643,7 +643,7 @@ public:
 
         simulator.Solve();
     }
-	void TestVoronoiMeshShape()
+	void xTestVoronoiMeshShape()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -662,9 +662,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestVoronoiMeshShape");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(10.0);
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1); //0.01
+        simulator.SetEndTime(10.0); //10
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -755,7 +755,7 @@ public:
 	    
         simulator.Solve();
     }
-	void TestLECDeath()
+	void xTestLECDeath()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -838,9 +838,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestLecDeath");
-        simulator.SetSamplingTimestepMultiple(160);
-		simulator.SetDt(0.01);
-        simulator.SetEndTime(50.0);
+        simulator.SetSamplingTimestepMultiple(10);//160
+		simulator.SetDt(0.1);//0.01
+        simulator.SetEndTime(5.0);//50
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);

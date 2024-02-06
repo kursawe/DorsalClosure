@@ -54,7 +54,7 @@
 class TestFirstDorsalClosure : public AbstractCellBasedTestSuite
 {
 public:
-    void TestClosureV02()
+    void xTestClosureV02()
     {
         //setting up the mesh that the elements (cells) lie on
         //6 cells across, 10 up 
@@ -156,7 +156,7 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev02");
         simulator.SetSamplingTimestepMultiple(50);
-        simulator.SetEndTime(0.5);
+        simulator.SetEndTime(10);
         simulator.SetDt(0.1);
 
         //changed parameters are to try and deal with 'hourglass' shape 
@@ -339,9 +339,10 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev0_sizes");
-        simulator.SetSamplingTimestepMultiple(100);
-        simulator.SetEndTime(82.0);
-        
+        simulator.SetSamplingTimestepMultiple(50);
+        simulator.SetEndTime(10.0);
+        simulator.SetDt(0.1);
+
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
         p_force->SetBoundaryLineTensionParameter(0.3);      //0.12 default 
@@ -418,7 +419,7 @@ public:
         simulator.Solve();
     }
     //test to try and remove voids that form as lecs die 
-    void TestClosureV02_void()
+    void xTestClosureV02_void()
     {
         //cell target area = 2.5 for lecs in mytargetareamodifier 
         
@@ -508,8 +509,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev02_void");
-        simulator.SetSamplingTimestepMultiple(70);
-        simulator.SetEndTime(110.0);
+        simulator.SetSamplingTimestepMultiple(10);
+        simulator.SetEndTime(10.0);
+        simulator.SetDt(0.1);
         
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
@@ -581,7 +583,7 @@ public:
         simulator.Solve();
     }
     //test to try and remove reliance on adjusted parameters 
-    void TestClosureV02_farhadifar()
+    void xTestClosureV02_farhadifar()
     {
 
         
@@ -672,8 +674,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev02_farhadifar");
-        simulator.SetSamplingTimestepMultiple(70);
-        simulator.SetEndTime(110.0);
+        simulator.SetSamplingTimestepMultiple(10);
+        simulator.SetEndTime(10.0);
+        simulator.SetDt(0.1);
         
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
@@ -744,7 +747,7 @@ public:
 
         simulator.Solve();
     }
-    void TestVoid()
+    void xTestVoid()
     {
 
         
