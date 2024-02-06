@@ -743,10 +743,10 @@ public:
      *
      * \todo In order to work the mesh archiving must support boundary nodes (see #1076)
      */
-    void noTestVertexStressTest()
+    void TestVertexStressTest()
     {
         double start_time = 0.0;
-        double end_time = 100.0;
+        double end_time = 100;
         std::string output_directory = "StressTestVertex";
 
         // Create a simple 2D MutableVertexMesh
@@ -766,6 +766,7 @@ public:
         simulator.SetOutputDirectory(output_directory);
         simulator.SetSamplingTimestepMultiple(50);
         simulator.SetEndTime(end_time);
+        
 
         // Create a force law and pass it to the simulation
         MAKE_PTR(NagaiHondaForce<2>, p_nagai_honda_force);
