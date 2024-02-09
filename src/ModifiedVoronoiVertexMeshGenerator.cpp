@@ -608,6 +608,7 @@ std::vector<c_vector<double, 2> > ModifiedVoronoiVertexMeshGenerator::GetElement
 
 void ModifiedVoronoiVertexMeshGenerator::CreateVoronoiTessellation(std::vector<c_vector<double, 2> >& rSeedLocations)
 {
+    MARK;
     // Clear the mesh nodes and elements, as they will be replaced in this method
     std::vector<Node<2>*> nodes;
     std::vector<VertexElement<2, 2>* > elements;
@@ -814,6 +815,7 @@ void ModifiedVoronoiVertexMeshGenerator::CreateVoronoiTessellation(std::vector<c
                                 // If the locations match, tag the node as being on the boundary
                                 nodes[node_idx]->SetAsBoundaryNode(true);
                                 //HOW_MANY_TIMES_HERE("boundary_nodes")
+                                PRINT_VARIABLE(nodes[node_idx]->GetIndex());
                             }
                         }
                     }

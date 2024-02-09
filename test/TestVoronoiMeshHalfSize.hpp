@@ -119,8 +119,8 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestHalfMesh");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
+        simulator.SetSamplingTimestepMultiple(1);
+		simulator.SetDt(0.01);
         simulator.SetEndTime(10.0);  //300
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
@@ -355,9 +355,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestHalfMesh_2");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);  //300//160
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(300.0);  //300//160
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -466,7 +466,21 @@ public:
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
+
+			//if (node_index == 51) // doesnt work, maybe nodes merge over time
+			//{
+				//MARK;
+				//p_this_node->SetAsBoundaryNode(true);
+			//}
+
+			//if (node_index == 52) // doesnt work, maybe nodes merge over time
+			//{
+				//MARK;
+				//p_this_node->SetAsBoundaryNode(true);
+			//}
+			
 		}
+		
 
 		// BOTTOM
 		c_vector<double,2> bottom_point = zero_vector<double>(2);
@@ -523,7 +537,7 @@ public:
 	void TestVoronoiSmallerMesh()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
-        ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0);
+        ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0); //DIFFERENT TO TEST 1
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh();
         
         std::vector<CellPtr> cells;
@@ -546,7 +560,7 @@ public:
 
 			p_model->SetStemCellG1Duration(48);
             p_model->SetTransitCellG1Duration(60);
-            p_model->SetMaxTransitGenerations(6);
+            p_model->SetMaxTransitGenerations(6); //DIFFERENT TO TEST 1
 
             double birth_time = - RandomNumberGenerator::Instance()->ranf() *
                                (  p_model->GetStemCellG1Duration()
@@ -570,7 +584,7 @@ public:
 		{
 			c_vector<double, 2> this_location = cell_population.GetLocationOfCellCentre(*cell_iter);
 
-			if (this_location(1) > 8.0 && this_location(1) < 42.0)
+			if (this_location(1) > 8.0 && this_location(1) < 42.0) //DIFFERENT TO TEST 1
 			{
 				cell_iter->AddCellProperty(p_label);
                 cell_iter->SetApoptosisTime(DBL_MAX);	
@@ -581,15 +595,15 @@ public:
                 cell_iter->SetCellProliferativeType(p_stem_type);
                 //cell_iter->SetCellProliferativeType(p_diff_type);
             }
-			if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0))
+			if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0)) //DIFFERENT TO TEST 1
 			{
 				cell_iter->Kill();
 			}
-			else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0))
+			else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0)) //DIFFERENT TO TEST 1
 			{
 				cell_iter->Kill();
 			}
-			else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5)
+			else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) //DIFFERENT TO TEST 1
 			{
 				cell_iter->Kill();
 			}
@@ -599,10 +613,11 @@ public:
 		
         simulator.SetOutputDirectory("TestSmallerMesh");
         simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(30.0);  //300//30
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(300.0);  //300//30
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
+		p_force->SetBoundaryLineTensionParameter(0.24);
         simulator.AddForce(p_force);
        
         MAKE_PTR(VoronoiTargetAreaModifier<2>, p_growth_modifier);
@@ -611,10 +626,10 @@ public:
         simulator.AddSimulationModifier(p_growth_modifier);
 
 		//MARK;
-		double top_height = 49.5 ;
+		double top_height = 49.5 ; //DIFFERENT TO TEST 1
 		//double bottom_height = 3.0/25.0;
-		double bottom_height = 0.4;
-		double right_bound = 29.5; //29.5
+		double bottom_height = 0.4; //DIFFERENT TO TEST 1
+		double right_bound = 29.5; //29.5 //DIFFERENT TO TEST 1
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -637,13 +652,13 @@ public:
 			int elem_with_node = p_this_node->GetNumContainingElements();
 			if (elem_with_node == 1)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 )
+				if (node_position[1] < 10.0 && node_position[1] > 6.5 )//DIFFERENT TO TEST 1
 				{
-					node_position[1] -= 1.0;
+					node_position[1] -= 1.0; //DIFFERENT TO TEST 1
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5)
+				else if (node_position[1] > 40.5 && node_position[1] < 43.5)//DIFFERENT TO TEST 1
 				{
-					node_position[1] += 1.0;
+					node_position[1] += 1.0; //DIFFERENT TO TEST 1
 				}
 			}
 
@@ -663,13 +678,13 @@ public:
 			}
 			if (hb_neighbour == true && lec_neighbour == true)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 )
+				if (node_position[1] < 10.0 && node_position[1] > 6.5 ) //DIFFERENT TO TEST 1
 				{
-					node_position[1] -= 1.0;
+					node_position[1] -= 1.0; //DIFFERENT TO TEST 1
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5)
+				else if (node_position[1] > 40.5 && node_position[1] < 43.5) //DIFFERENT TO TEST 1
 				{
-					node_position[1] += 1.0;
+					node_position[1] += 1.0; //DIFFERENT TO TEST 1
 				}
 			}
 
@@ -686,53 +701,89 @@ public:
 			
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
-			if (node_position[1] > 1.0 && node_position[1] < 1.5 && node_position[0] > -1.0 && node_position[0] < 1.0)
-			{
+			//if (node_position[1] > 1.0 && node_position[1] < 1.5 && node_position[0] > -1.0 && node_position[0] < 1.0)
+			//{
 				//PRINT_VARIABLE(node_position[0]);
 				//PRINT_VARIABLE(node_position[1]);
-			}
+			//}
 			if ( node_position[1] > 49.8 )
 			{
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = top_height + 0.001;
 			}
-			if ( node_position[1] < 0.2 )
-			{
+			if ( node_position[1] < 0.2 )// no difference if set as 0.4
+			{ 
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 			    node_position[1] = bottom_height - 0.001;
 			}
 
-			if ( node_position[0] < 0.0) 
+			if ( node_position[0] < 0.01) 
 			{
+				p_this_node->SetAsBoundaryNode(true); //adding this means the code breaks quicker 
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = left_bound - 0.001;
 			}
 			else if ( node_position[0] > 29.5 && node_position[1] > 7.0 && node_position[1] < 41.0)
 			{
+				p_this_node->SetAsBoundaryNode(true); //adding this code breaks and right hand side sticks
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
 			else if ( node_position[0] > 29.5 && node_position[1] < 5.0)
 			{
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
 			else if ( node_position[0] > 29.54 && node_position[1] < 6.0 && node_position[1] > 5.8)
 			{
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 				//PRINT_VARIABLE(node_position[0]);
 			}
 			else if ( node_position[0] > 29.5 && node_position[1] > 45.0)
 			{
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
 			else if ( node_position[0] > 28.9 && node_position[1] > 42.3 && node_position[1] < 45.5)
 			{
+				p_this_node->SetAsBoundaryNode(true); //Fiona Added
 				//assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
+			}//Fiona Added below
+			else if ( node_position[0] > 25 && node_position[1] > 28 && node_position[1] < 30)
+			{
+				p_this_node->SetAsBoundaryNode(true);
+			
+			}//Fiona Added below
+			if ( node_position[0] > 0 && node_position[0] < 10 && node_position[1] > 15 && node_position[1] < 25)
+			{
+				p_this_node->SetAsBoundaryNode(true);
+			
 			}
+			if ( node_position[0] > 20 && node_position[0] < 30 && node_position[1] > 38 && node_position[1] < 48)
+			{
+				p_this_node->SetAsBoundaryNode(true);
+			
+			}
+
+			//if (node_index == 734) // doesnt work, maybe nodes merge over time
+			//{
+				//MARK;
+				//p_this_node->SetAsBoundaryNode(true);
+			//}
+
+			//if (node_index == 806)
+			//{
+				//p_this_node->SetAsBoundaryNode(true);
+			//}
+			
+		
 		}
 
 		// BOTTOM

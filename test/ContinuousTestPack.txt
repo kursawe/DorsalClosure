@@ -6,3 +6,4 @@ TestVoronoiMeshV01.hpp
 TestNoVoids.hpp
 TestVoronoiMeshV02.hpp
 TestVoronoiMeshHalfSize.hpp
+TestFionaDorsalClosure.hpp

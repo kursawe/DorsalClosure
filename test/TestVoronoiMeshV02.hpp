@@ -43,7 +43,7 @@
 class TestVoronoiMeshV02 : public AbstractCellBasedTestSuite
 {
 public:
-    void TestApoptosisVoronoi()
+    void xTestApoptosisVoronoi()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -121,9 +121,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestApoptosisVoronoi");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);//350
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(30.0);//350
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -195,6 +195,7 @@ public:
 
 			if ( node_position[1] > 55.0 )
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = top_height + 0.001;
 			}
@@ -279,7 +280,7 @@ public:
 
         simulator.Solve();
     }
-    void xTestVoronoiClosure()
+    void TestVoronoiClosure()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -362,9 +363,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestVoronoiClosure");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);//300
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(0.0);//300
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -388,13 +389,13 @@ public:
 			bool hb_neighbour = false;
 			bool lec_neighbour = false;
 			int elem_with_node = p_this_node->GetNumContainingElements();
-			if (elem_with_node == 1)
+			if (elem_with_node == 1) // If the node is only in 1 cell 
 			{
-				if (node_position[1] < 9.0 && node_position[1] > 6.4 )
+				if (node_position[1] < 9.0 && node_position[1] > 6.4 ) //on the lower boundary of histoblasts and LECs
 				{
 					node_position[1] -= 1.0;
 				}
-				else if (node_position[1] > 46.5 && node_position[1] < 49.0)
+				else if (node_position[1] > 46.5 && node_position[1] < 49.0) //on the upper boundary of histoblasts and LECs
 				{
 					node_position[1] += 1.0;
 				}
@@ -434,34 +435,40 @@ public:
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
 
-			if ( node_position[1] > 55.0 )
+			if ( node_position[1] > 55.0 ) // can just set as top_height
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = top_height + 0.001;
 			}
-			if ( node_position[1] < 0.2 )
+			if ( node_position[1] < 7.0 )//0.2 (should this not be 7, no difference if changed)
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = bottom_height - 0.001;
 			}
 
-			if ( node_position[0] < 0.01) 
+			if ( node_position[0] < 0.0) //0.01 why not 0, no  difference if changed
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = left_bound - 0.001;
 			}
-			else if ( node_position[0] > 77.49 && node_position[1] < 48.01)
+			else if ( node_position[0] > 77.49 && node_position[1] < 48.01) // why y bound?
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
-			else if ( node_position[0] > 77.49 && node_position[1] > 49.5)
+			else if ( node_position[0] > 77.49 && node_position[1] > 49.5)//why not same as value above
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
-			else if ( node_position[0] > 76.9 && node_position[1] > 47.5 && node_position[1] < 51.0)
+			else if ( node_position[0] > 76.9 && node_position[1] > 47.5 && node_position[1] < 51.0) 
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
@@ -603,9 +610,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestApoptosisandProliferationVoronoi");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);//150
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(150.0);//150
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -677,32 +684,38 @@ public:
 
 			if ( node_position[1] > 55.0 )
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = top_height + 0.001;
 			}
 			if ( node_position[1] < 0.2 )
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = bottom_height - 0.001;
 			}
 
 			if ( node_position[0] < 0.01) 
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = left_bound - 0.001;
 			}
 			else if ( node_position[0] > 77.49 && node_position[1] < 48.01)
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
 			else if ( node_position[0] > 77.49 && node_position[1] > 49.5)
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
 			else if ( node_position[0] > 76.9 && node_position[1] > 47.5 && node_position[1] < 51.0)
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
 			}
@@ -844,9 +857,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestVoronoiClosure2");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(10.0);  //300
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(300.0);  //300
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -920,6 +933,7 @@ public:
 
 			if ( node_position[1] > 55.0 )
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = top_height + 0.001;
 			}

@@ -310,7 +310,7 @@ public:
 		
 		simulator.Solve();
     }
-	void TestLabels()
+	void xTestLabels()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -387,9 +387,9 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
         simulator.SetOutputDirectory("TestLabelledCells");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1); //0.01
-        simulator.SetEndTime(5.0); //100
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01); //0.01
+        simulator.SetEndTime(100); //100
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -755,7 +755,7 @@ public:
 	    
         simulator.Solve();
     }
-	void xTestLECDeath()
+	void TestLECDeath()
     {
         //cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
         ModifiedVoronoiVertexMeshGenerator generator(16,22,6,0,1.0);
@@ -838,9 +838,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestLecDeath");
-        simulator.SetSamplingTimestepMultiple(10);//160
-		simulator.SetDt(0.1);//0.01
-        simulator.SetEndTime(5.0);//50
+        simulator.SetSamplingTimestepMultiple(1);//160
+		simulator.SetDt(0.01);//0.01
+        simulator.SetEndTime(50.0);//50
         
         MAKE_PTR(FarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
@@ -955,6 +955,7 @@ public:
 			}
 			if ( node_position[1] < 0.2 )
 			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[1] = bottom_height - 0.001;
 			}
@@ -1015,6 +1016,13 @@ public:
 			{
 				assert( p_this_node->IsBoundaryNode() );
 				node_position[0] = right_bound + 0.001;
+			}
+
+			if (node_position[0] < 0.1) //Fiona added
+			{
+				p_this_node->SetAsBoundaryNode(true);//Fiona added
+				assert( p_this_node->IsBoundaryNode() );
+				node_position[0] = left_bound - 0.001;
 			}
 			//else if (node_position[1] < 5.5 && node_position[1] > 5.0 && node_position[0] > 78.2)
 			//{

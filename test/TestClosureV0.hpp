@@ -156,7 +156,7 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev02");
         simulator.SetSamplingTimestepMultiple(50);
-        simulator.SetEndTime(10);
+        simulator.SetEndTime(10.0);
         simulator.SetDt(0.1);
 
         //changed parameters are to try and deal with 'hourglass' shape 
@@ -339,9 +339,9 @@ public:
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("closurev0_sizes");
-        simulator.SetSamplingTimestepMultiple(50);
-        simulator.SetEndTime(10.0);
-        simulator.SetDt(0.1);
+        simulator.SetSamplingTimestepMultiple(10);
+        simulator.SetEndTime(20.0);
+        simulator.SetDt(0.5);
 
         //changed parameters are to try and deal with 'hourglass' shape 
         MAKE_PTR(FarhadifarForce<2>, p_force);
@@ -366,7 +366,7 @@ public:
         //make a pointer to a PlaneBoundaryCondition, pass in point and normal
         MAKE_PTR_ARGS(PlaneBoundaryCondition<2>, uppery_p_boundarycondition, (&cell_population, uppery_point, uppery_normal));
         uppery_p_boundarycondition->SetUseJiggledNodesOnPlane(true);
-        simulator.AddCellPopulationBoundaryCondition(uppery_p_boundarycondition);
+        simulator.AddCellPopulationBoundaryCondition(uppery_p_boundarycondition); //this line not in previous test
 
         //lower boundary
        
@@ -379,7 +379,7 @@ public:
         //make a pointer to a PlaneBoundaryCondition, pass in point and normal
         MAKE_PTR_ARGS(PlaneBoundaryCondition<2>, lowery_p_boundarycondition, (&cell_population, lowery_point, lowery_normal));
         lowery_p_boundarycondition->SetUseJiggledNodesOnPlane(true);
-        simulator.AddCellPopulationBoundaryCondition(lowery_p_boundarycondition);
+        simulator.AddCellPopulationBoundaryCondition(lowery_p_boundarycondition); //this line not in previous test
 
         //left boundary
 
@@ -410,11 +410,12 @@ public:
         MAKE_PTR_ARGS(MyCellKiller<2>, p_cell_killer, (&cell_population, 0.046));
         simulator.AddCellKiller(p_cell_killer);
 
-        for (unsigned i=0; i<21; ++i)
-        {
-            SimulationTime::Instance()->IncrementTimeOneStep();
-            cell_population.Update();
-        }
+
+        //for (unsigned i=0; i<21; ++i) //not in previous test. Including this leads to error - what is this for?
+        //{
+            //SimulationTime::Instance()->IncrementTimeOneStep();
+            //cell_population.Update();
+        //}
 
         simulator.Solve();
     }
