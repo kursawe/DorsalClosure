@@ -78,8 +78,10 @@ void MyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr pCell)
     if (!pCell->HasApoptosisBegun() &&
         RandomNumberGenerator::Instance()->ranf() < death_prob_this_timestep)
     {
+        //pCell->SetApoptosisTime(10000);
         // Mark the cell as apoptotic and store removal information if required.
         this->mpCellPopulation->StartApoptosisOnCell(pCell, "MyCellKiller");
+
     }
 }
 

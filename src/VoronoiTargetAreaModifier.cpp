@@ -42,12 +42,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractCellMutationState.hpp"
 #include "WildTypeCellMutationState.hpp"
 #include "VertexBasedCellPopulation.hpp"
+#include "Debug.hpp"
 template<unsigned DIM>
 VoronoiTargetAreaModifier<DIM>::VoronoiTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(25.0)      //(sqrt(3.0)*3.62733*3.62733/2.0) for half mesh size  // 25.0*sqrt(3.0)/2.0 for TestVoronoiMeshV02
+      mLecArea(32)      //  aim to get actual total area and target area stay roughly consistent. 32 seems to make this ok.
 {
 }
 
@@ -77,15 +78,15 @@ template<unsigned DIM>
 void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 {
     double cell_target_area;
-    //double lec_area = mLecArea;
+    double lec_area = mLecArea;
 
     // Get target area A of a healthy cell in S, G2 or M phase
     if (pCell->HasCellProperty<CellLabel>())
     {
         //lecs are labelled, and are given larger target area
         cell_target_area = this->mReferenceTargetArea;
-        cell_target_area *= 25.0;
-        //cell_target_area *= lec_area;
+        //cell_target_area *= 25.0;
+        cell_target_area *= lec_area;
         //cell_target_area *= 0.125;
         //cell_target_area *= 2.5;
         //cell_target_area *= 5.0;
@@ -96,7 +97,7 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     {
         //hbs given target area = 1
         cell_target_area = this->mReferenceTargetArea;
-        //cell_target_area *= lec_area/25.0;
+        //cell_target_area *= 1.0;
     }
     double growth_duration = mGrowthDuration;
     if (growth_duration == DOUBLE_UNSET)
@@ -126,6 +127,7 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         //but in TestClosureV0 it is longer than 2 time units as there are other forces opposing the growth to the target area size//
         if (pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime() < growth_duration)
         {
+            //MARK;
             cell_target_area *= 0.5*(1 + (pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime())/growth_duration);
         }
 
@@ -167,6 +169,7 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 
     // Set cell data
     pCell->GetCellData()->SetItem("target area", cell_target_area);
+   
 }
 
 template<unsigned DIM>
