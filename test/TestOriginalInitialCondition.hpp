@@ -1,5 +1,5 @@
-#ifndef TESTFIONADORSALCLOSURE_HPP_
-#define TESTFIONADORSALCLOSURE_HPP_
+#ifndef TESTORIGINALINITIALCONDITION_HPP_
+#define TESTORIGINALINITIALCONDITION_HPP_
 
 //INCLUDE NECCESSARY FILES
 
@@ -55,11 +55,11 @@
 //#include "CellAncestorWriter.hpp"
 
 // CODE ACTUALLY STARTS BELOW
-class TestFionaDorsalClosure : public AbstractCellBasedTestSuite
+class TestOriginalInitialCondition : public AbstractCellBasedTestSuite
 {
 public:
 // Test Starts Here
-	void TestFionaSmallerMesh()
+	void TestOriginalInitialCondition2()
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
 		//FionaVoronoiVertexMeshGenerator generator(13,30,10,0,1.0); // GEORGIA FILE
@@ -136,27 +136,27 @@ public:
                 //cell_iter->SetCellProliferativeType(p_diff_type);
             }
 			// If outside the boundaries then kill the cells
-			if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) 
-			{
-				cell_iter->Kill();
-			}
+			// if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
+			// {
+			// 	cell_iter->Kill();
+			// }
+			// else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
+			// {
+			// 	cell_iter->Kill();
+			// }
+			// else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) 
+			// {
+			// 	cell_iter->Kill();
+			// }
 		}
 
         OffLatticeSimulation<2> simulator(cell_population);
 		
 		// Set timestep details for simulatinos
-        simulator.SetOutputDirectory("TestFionaSmallerMesh");
+        simulator.SetOutputDirectory("TestOriginalInitialCondition");
         simulator.SetSamplingTimestepMultiple(100); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
-        simulator.SetEndTime(1000.0);
+        simulator.SetEndTime(0.0);
         
 		// Set the force to be used by cells to be a Farhadifar Force (CHASTE DEFINED). Forces defined here but not implemented until area modifier?
         MAKE_PTR(FarhadifarForce<2>, p_force);
@@ -172,164 +172,164 @@ public:
 	
 
 		// Set c and y boundary points
-		double top_height = 49.5 ; 
-		double bottom_height = 0.4; 
-		double right_bound = 29.5; 
-		double left_bound = 0.0;
-		unsigned num_nodes = cell_population.GetNumNodes();
+		//double top_height = 49.5 ; 
+		//double bottom_height = 0.4; 
+		//double right_bound = 29.5; 
+		//double left_bound = 0.0;
+		//unsigned num_nodes = cell_population.GetNumNodes();
 
 		
 		
 		//iterate over vertices in the cell population, this section modifies the histoblast cells on the boundary of the LECs
-		for (unsigned node_index=0; node_index<num_nodes; node_index++)
-		{
-			Node<2>* p_this_node = cell_population.GetNode(node_index);
-			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
+		// for (unsigned node_index=0; node_index<num_nodes; node_index++)
+		// {
+		// 	Node<2>* p_this_node = cell_population.GetNode(node_index);
+		// 	c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
 
-			std::set<unsigned> containing_element_indices = p_this_node->rGetContainingElementIndices();
-			bool hb_neighbour = false;
-			bool lec_neighbour = false;
-			int elem_with_node = p_this_node->GetNumContainingElements();
-			if (elem_with_node == 1)
-			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 )
-				{
-					node_position[1] -= 1.0; 
-				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5)
-				{
-					node_position[1] += 1.0; 
-				}
-			}
+		// 	std::set<unsigned> containing_element_indices = p_this_node->rGetContainingElementIndices();
+		// 	bool hb_neighbour = false;
+		// 	bool lec_neighbour = false;
+		// 	int elem_with_node = p_this_node->GetNumContainingElements();
+		// 	if (elem_with_node == 1)
+		// 	{
+		// 		if (node_position[1] < 10.0 && node_position[1] > 6.5 )
+		// 		{
+		// 			node_position[1] -= 1.0; 
+		// 		}
+		// 		else if (node_position[1] > 40.5 && node_position[1] < 43.5)
+		// 		{
+		// 			node_position[1] += 1.0; 
+		// 		}
+		// 	}
 
-			for (std::set<unsigned>::iterator iter = containing_element_indices.begin();
-             iter != containing_element_indices.end();
-             iter++)
-        	{
-				if (cell_population.GetCellUsingLocationIndex(*iter)->template HasCellProperty<CellLabel>())
-				{
-					hb_neighbour = true;
-				}
-				else
-				{
-					lec_neighbour = true;
-				}
-			}
-			if (hb_neighbour == true && lec_neighbour == true)
-			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 ) 
-				{
-					node_position[1] -= 1.0; 
-				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5) 
-				{
-					node_position[1] += 1.0; 
-				}
-			}
-		}
+		// 	for (std::set<unsigned>::iterator iter = containing_element_indices.begin();
+        //      iter != containing_element_indices.end();
+        //      iter++)
+        // 	{
+		// 		if (cell_population.GetCellUsingLocationIndex(*iter)->template HasCellProperty<CellLabel>())
+		// 		{
+		// 			hb_neighbour = true;
+		// 		}
+		// 		else
+		// 		{
+		// 			lec_neighbour = true;
+		// 		}
+		// 	}
+		// 	if (hb_neighbour == true && lec_neighbour == true)
+		// 	{
+		// 		if (node_position[1] < 10.0 && node_position[1] > 6.5 ) 
+		// 		{
+		// 			node_position[1] -= 1.0; 
+		// 		}
+		// 		else if (node_position[1] > 40.5 && node_position[1] < 43.5) 
+		// 		{
+		// 			node_position[1] += 1.0; 
+		// 		}
+		// 	}
+		// }
         
 		
 
 		
-		// Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
-		for (unsigned node_index=0; node_index<num_nodes; node_index++)
-		{
-			Node<2>* p_this_node = cell_population.GetNode(node_index);
-			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
-			if ( node_position[1] > 49.8 )
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[1] = top_height + 0.001;
-			}
-			if ( node_position[1] < 0.2 )// no difference if set as 0.4
-			{ 
-				p_this_node->SetAsBoundaryNode(true);
-			    node_position[1] = bottom_height - 0.001;
-			}
+		// // Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
+		// for (unsigned node_index=0; node_index<num_nodes; node_index++)
+		// {
+		// 	Node<2>* p_this_node = cell_population.GetNode(node_index);
+		// 	c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
+		// 	if ( node_position[1] > 49.8 )
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[1] = top_height + 0.001;
+		// 	}
+		// 	if ( node_position[1] < 0.2 )// no difference if set as 0.4
+		// 	{ 
+		// 		p_this_node->SetAsBoundaryNode(true);
+		// 	    node_position[1] = bottom_height - 0.001;
+		// 	}
 
-			if ( node_position[0] < 0.01) //needs to be 0.01
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = left_bound - 0.001;
-			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 7.0 && node_position[1] < 41.0)//needed
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 29.5 && node_position[1] < 5.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 29.54 && node_position[1] < 6.0 && node_position[1] > 5.8)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
+		// 	if ( node_position[0] < 0.01) //needs to be 0.01
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[0] = left_bound - 0.001;
+		// 	}
+		// 	else if ( node_position[0] > 29.5 && node_position[1] > 7.0 && node_position[1] < 41.0)//needed
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[0] = right_bound + 0.001;
+		// 	}
+		// 	else if ( node_position[0] > 29.5 && node_position[1] < 5.0)//not needed or at least until t=240
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[0] = right_bound + 0.001;
+		// 	}
+		// 	else if ( node_position[0] > 29.54 && node_position[1] < 6.0 && node_position[1] > 5.8)//not needed or at least until t=240
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[0] = right_bound + 0.001;
 				
-			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 45.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true);
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 28.9 && node_position[1] > 42.3 && node_position[1] < 45.5) //needed
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
+		// 	}
+		// 	else if ( node_position[0] > 29.5 && node_position[1] > 45.0)//not needed or at least until t=240
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true);
+		// 		node_position[0] = right_bound + 0.001;
+		// 	}
+		// 	else if ( node_position[0] > 28.9 && node_position[1] > 42.3 && node_position[1] < 45.5) //needed
+		// 	{
+		// 		p_this_node->SetAsBoundaryNode(true); 
+		// 		node_position[0] = right_bound + 0.001;
+		// 	}
 			
 		
-		}
+		// }
 
-		// Boundary conditions
-		// BOTTOM
-		c_vector<double,2> bottom_point = zero_vector<double>(2);
-		bottom_point(0) = 0.0;
-		bottom_point(1) = bottom_height;
+		// // Boundary conditions
+		// // BOTTOM
+		// c_vector<double,2> bottom_point = zero_vector<double>(2);
+		// bottom_point(0) = 0.0;
+		// bottom_point(1) = bottom_height;
 
-		c_vector<double,2> bottom_normal = zero_vector<double>(2);
-		bottom_normal(1) = -1.0;
+		// c_vector<double,2> bottom_normal = zero_vector<double>(2);
+		// bottom_normal(1) = -1.0;
 
-		MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_lower_boundary_condition, (&cell_population, bottom_point, bottom_normal) );
-		simulator.AddCellPopulationBoundaryCondition(p_lower_boundary_condition);
+		// MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_lower_boundary_condition, (&cell_population, bottom_point, bottom_normal) );
+		// simulator.AddCellPopulationBoundaryCondition(p_lower_boundary_condition);
 
-		// TOP
-		c_vector<double,2> top_point = zero_vector<double>(2);
-		top_point(0) = 0.0;
-		top_point(1) = top_height;
+		// // TOP
+		// c_vector<double,2> top_point = zero_vector<double>(2);
+		// top_point(0) = 0.0;
+		// top_point(1) = top_height;
 
-		c_vector<double,2> top_normal = zero_vector<double>(2);
-		top_normal(1) = 1.0;
+		// c_vector<double,2> top_normal = zero_vector<double>(2);
+		// top_normal(1) = 1.0;
 
-		MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_top_boundary_condition, (&cell_population, top_point, top_normal));
-		simulator.AddCellPopulationBoundaryCondition(p_top_boundary_condition);
+		// MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_top_boundary_condition, (&cell_population, top_point, top_normal));
+		// simulator.AddCellPopulationBoundaryCondition(p_top_boundary_condition);
 
-		// LEFT
-		c_vector<double,2> left_point = zero_vector<double>(2);
-		left_point(0) = left_bound;
-		left_point(1) = 0.0;
+		// // LEFT
+		// c_vector<double,2> left_point = zero_vector<double>(2);
+		// left_point(0) = left_bound;
+		// left_point(1) = 0.0;
 
-		c_vector<double,2> left_normal = zero_vector<double>(2);
-		left_normal(0) = -1.0;
+		// c_vector<double,2> left_normal = zero_vector<double>(2);
+		// left_normal(0) = -1.0;
 
-		MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_left_boundary_condition, (&cell_population, left_point, left_normal));
-		simulator.AddCellPopulationBoundaryCondition(p_left_boundary_condition);
+		// MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_left_boundary_condition, (&cell_population, left_point, left_normal));
+		// simulator.AddCellPopulationBoundaryCondition(p_left_boundary_condition);
 
-		// RIGHT
-		c_vector<double,2> right_point = zero_vector<double>(2);
-		right_point(0) = right_bound;
-		right_point(1) = 0.0;
+		// // RIGHT
+		// c_vector<double,2> right_point = zero_vector<double>(2);
+		// right_point(0) = right_bound;
+		// right_point(1) = 0.0;
 
-		c_vector<double,2> right_normal = zero_vector<double>(2);
-		right_normal(0) = 1.0;
+		// c_vector<double,2> right_normal = zero_vector<double>(2);
+		// right_normal(0) = 1.0;
 
-		MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_right_boundary_condition, (&cell_population, right_point, right_normal));
-		simulator.AddCellPopulationBoundaryCondition(p_right_boundary_condition);
+		// MAKE_PTR_ARGS(PlaneStickyBoundaryCondition<2>, p_right_boundary_condition, (&cell_population, right_point, right_normal));
+		// simulator.AddCellPopulationBoundaryCondition(p_right_boundary_condition);
 
-		// Only form of cell death is from MyCellKiller. The input probability is the probability that in an hour's worth of trying, the cell killer will have successfully killed a given cell.
-        MAKE_PTR_ARGS(MyCellKiller<2>, p_cell_killer, (&cell_population, 0.008));
-        simulator.AddCellKiller(p_cell_killer);
+		// // Only form of cell death is from MyCellKiller. The input probability is the probability that in an hour's worth of trying, the cell killer will have successfully killed a given cell.
+        // MAKE_PTR_ARGS(MyCellKiller<2>, p_cell_killer, (&cell_population, 0.008));
+        // simulator.AddCellKiller(p_cell_killer);
 	
 		//cell_population.AddCellPopulationCountWriter<CellProliferativePhasesCountWriter>();
 		cell_population.AddCellWriter<FionaGenWriter>();
@@ -348,4 +348,4 @@ public:
     }
 };
 // END OF FILE
-#endif /*TESTFIONADORSALCLOSURE_HPP_*/
+#endif /*TESTORIGINALINITIALCONDITION_HPP_*/

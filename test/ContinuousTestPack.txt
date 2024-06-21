@@ -7,3 +7,8 @@ TestNoVoids.hpp
 TestVoronoiMeshV02.hpp
 TestVoronoiMeshHalfSize.hpp
 TestFionaDorsalClosure.hpp
+TestFionaElongated.hpp
+TestOriginalInitialCondition.hpp
+TestFionaInitialConditionAlt.hpp
+TestOneCell.hpp
+TestFionaNew.hpp

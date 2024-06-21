@@ -166,8 +166,30 @@ bool PlaneStickyBoundaryCondition<ELEMENT_DIM, SPACE_DIM>::VerifyBoundaryConditi
         {
             c_vector<double, SPACE_DIM> cell_location = this->mpCellPopulation->GetLocationOfCellCentre(*cell_iter);
 
+
+			//if cell_location
+			//{
+			//	PRINT_VARIABLE(cell_iter->GetCellId());
+			//}
+
             if (inner_prod(cell_location - mPointOnPlane, mNormalToPlane) > 0.0)
             {
+				PRINT_VARIABLE(cell_iter->GetCellId());
+				PRINT_VARIABLE(cell_location);
+				//unsigned location_index = mpCellPopulation->GetLocationIndexUsingCell(cell_iter);
+				//mpCellPopulation->rGetMesh.GetElement(location_index);
+				//VertexBasedCellPopulation<SPACE_DIM>* p_CellPopulation = static_cast<VertexBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
+				//VertexElement<SPACE_DIM, SPACE_DIM>* this_element = p_CellPopulation->GetElementCorrespondingToCell(*cell_iter);
+				//unsigned number_nodes = this_element->GetNumNodes();
+				//for (unsigned node_index=0; node_index < number_nodes; node_index++)
+				//{
+				//	PRINT_VECTOR(this_element->GetNode(node_index)->rGetLocation());
+
+				//}
+
+				//GetNodeLocation
+
+
                 condition_satisfied = false;
                 break;
             }

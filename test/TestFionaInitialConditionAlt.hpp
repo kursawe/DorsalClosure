@@ -1,5 +1,5 @@
-#ifndef TESTFIONADORSALCLOSURE_HPP_
-#define TESTFIONADORSALCLOSURE_HPP_
+#ifndef TESTFIONAINITIALCONDITIONALT_HPP_
+#define TESTFIONAINITIALCONDITIONALT_HPP_
 
 //INCLUDE NECCESSARY FILES
 
@@ -40,7 +40,7 @@
 
 // Georgia specified files
 #include "FionaVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
-#include "ModifiedVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
+#include "AltVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
 //#include "MyApoptoticCellKiller.hpp" // Georgia File for defining cell death
 #include "MyCellKiller.hpp" // Georgia File for defining cell death
 #include "PlaneStickyBoundaryCondition.hpp" // Georgia File that imposes boundary condition
@@ -55,16 +55,15 @@
 //#include "CellAncestorWriter.hpp"
 
 // CODE ACTUALLY STARTS BELOW
-class TestFionaDorsalClosure : public AbstractCellBasedTestSuite
+class TestFionaInitialConditionAlt : public AbstractCellBasedTestSuite
 {
 public:
 // Test Starts Here
-	void TestFionaSmallerMesh()
+	void TestFionaInitialConditionAltTest()
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
-		//FionaVoronoiVertexMeshGenerator generator(13,30,10,0,1.0); // GEORGIA FILE
 		
-        ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0); // GEORGIA FILE
+        AltVoronoiVertexMeshGenerator generator(13,22,6,0,1.0); // GEORGIA FILE
 		
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh(); // Define as a mutable 2D vertex mesh
         
@@ -122,7 +121,7 @@ public:
 			c_vector<double, 2> this_location = cell_population.GetLocationOfCellCentre(*cell_iter);
 
 			// Assign cells to LECs if in this area
-			if (this_location(1) > 8.0 && this_location(1) < 42.0) 
+			if (this_location(1) > 7.0 && this_location(1) < 101.0) 
 			{
 				cell_iter->AddCellProperty(p_label); // Label the LECS 
                 cell_iter->SetApoptosisTime(DBL_MAX); // Set apoptosis time to be infinte to start with or cell dies too quickly leaving gaps	
@@ -135,26 +134,26 @@ public:
 				
                 //cell_iter->SetCellProliferativeType(p_diff_type);
             }
-			// If outside the boundaries then kill the cells
-			if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) 
-			{
-				cell_iter->Kill();
-			}
+			// // If outside the boundaries then kill the cells
+			 if (this_location(0) < -0.2 && (this_location(1) < 7.0 || this_location(1) > 101.0)) 
+			 {
+			 	cell_iter->Kill();
+			 }
+			 else if (this_location(0) > 47.1 && (this_location(1) < 7.0 || this_location(1) > 101.0)) 
+			 {
+			 	cell_iter->Kill();
+			 }
+			// else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) 
+			// {
+			// 	cell_iter->Kill();
+			// }
 		}
 
         OffLatticeSimulation<2> simulator(cell_population);
 		
 		// Set timestep details for simulatinos
-        simulator.SetOutputDirectory("TestFionaSmallerMesh");
-        simulator.SetSamplingTimestepMultiple(100); // 100 means each data value plotted is order 1 time unit
+        simulator.SetOutputDirectory("TestFionaInitialConditionAlt");
+        simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
         simulator.SetEndTime(1000.0);
         
@@ -169,12 +168,19 @@ public:
 		// Include Volume Tracker - allows us to visualise/plot cell volumes/areas in paraview
 		MAKE_PTR(VolumeTrackingModifier<2>, p_modifier);
         simulator.AddSimulationModifier(p_modifier);
+
+		//c_vector<double, 2> bias_vector;
+        //bias_vector(0) = 0.0;
+        //bias_vector(1) = 1.0;
+		//MAKE_PTR_ARGS(DivisionBiasTrackingModifier<2>, p_modifier2, (bias_vector));
+        //simulator.AddSimulationModifier(p_modifier2);
+
 	
 
 		// Set c and y boundary points
-		double top_height = 49.5 ; 
-		double bottom_height = 0.4; 
-		double right_bound = 29.5; 
+		double top_height = 107.8 ; 
+		double bottom_height = 0.25; 
+		double right_bound = 46.75; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -192,13 +198,13 @@ public:
 			int elem_with_node = p_this_node->GetNumContainingElements();
 			if (elem_with_node == 1)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 )
+				if (node_position[1] < 8.0 && node_position[1] > 6.0 )
 				{
-					node_position[1] -= 1.0; 
+					node_position[1] -= 0.0; 
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5)
+				else if (node_position[1] > 100.0 && node_position[1] < 103.0)
 				{
-					node_position[1] += 1.0; 
+					node_position[1] += 0.0; 
 				}
 			}
 
@@ -217,67 +223,71 @@ public:
 			}
 			if (hb_neighbour == true && lec_neighbour == true)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 ) 
+				if (node_position[1] < 8.0 && node_position[1] > 6.0 ) 
 				{
-					node_position[1] -= 1.0; 
+					node_position[1] -= 0.0; 
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5) 
+				else if (node_position[1] > 100.0 && node_position[1] < 103.0) 
 				{
-					node_position[1] += 1.0; 
+					node_position[1] += 0.0; 
 				}
 			}
+
+
+			if (node_position[1] > 100.0 && node_position[1] < 103.0)
+		 			{
+		 				node_position[1] += 1.5;//1.25;//1.2;//0.45;//0.44;   0 = t=104, 0.3 t=56, 0.2 t=164, 0.1 t=151
+						
+		 			}
+					else if (node_position[1] > 6.0 && node_position[1] < 8.0)
+		 			{
+		 				node_position[1] -= 1.5;//1.2;//0.45;//0.44; 
+						
+		 			}
+
+					if (node_position[1] > 102.0 && node_position[1] < 104.0)
+		 			{
+		 				node_position[1] += 1.0;//1.25;//1.2;//0.45;//0.44;   0 = t=104, 0.3 t=56, 0.2 t=164, 0.1 t=151
+						
+		 			}
+					else if (node_position[1] > 4.65 && node_position[1] < 8.0)
+		 			{
+		 				node_position[1] -= 1.0;//1.2;//0.45;//0.44; 
+						
+		 			}
+			
 		}
         
 		
 
 		
-		// Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
+		// // Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
 		for (unsigned node_index=0; node_index<num_nodes; node_index++)
 		{
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
-			if ( node_position[1] > 49.8 )
+			if ( node_position[1] > top_height-0.001)
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[1] = top_height + 0.001;
 			}
-			if ( node_position[1] < 0.2 )// no difference if set as 0.4
+			if ( node_position[1] < bottom_height+0.001 )// no difference if set as 0.4
 			{ 
 				p_this_node->SetAsBoundaryNode(true);
-			    node_position[1] = bottom_height - 0.001;
+			   node_position[1] = bottom_height - 0.001;
 			}
 
-			if ( node_position[0] < 0.01) //needs to be 0.01
+			if ( node_position[0] < left_bound + 0.01) //needs to be 0.01
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = left_bound - 0.001;
 			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 7.0 && node_position[1] < 41.0)//needed
+			if ( node_position[0] > right_bound-0.001 )//needed
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = right_bound + 0.001;
 			}
-			else if ( node_position[0] > 29.5 && node_position[1] < 5.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 29.54 && node_position[1] < 6.0 && node_position[1] > 5.8)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-				
-			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 45.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true);
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 28.9 && node_position[1] > 42.3 && node_position[1] < 45.5) //needed
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
+			
 			
 		
 		}
@@ -348,4 +358,4 @@ public:
     }
 };
 // END OF FILE
-#endif /*TESTFIONADORSALCLOSURE_HPP_*/
+#endif /*TESTFIONAINITIALCONDITIONALT_HPP_*/

@@ -1,5 +1,5 @@
-#ifndef TESTFIONADORSALCLOSURE_HPP_
-#define TESTFIONADORSALCLOSURE_HPP_
+#ifndef TESTFIONANEW_HPP_
+#define TESTFIONANEW_HPP_
 
 //INCLUDE NECCESSARY FILES
 
@@ -33,18 +33,18 @@
 //Cell based model Chaste choices
 #include "AbstractSimpleGenerationalCellCycleModel.hpp" //Chaste file for cell cycle model
 #include "DifferentiatedCellProliferativeType.hpp" //Chaste file for defining differentiated type
-#include "FarhadifarForce.hpp" //Chaste file, A force class for use in Vertex-based simulations.
+#include "FionaFarhadifarForce.hpp" //Chaste file, A force class for use in Vertex-based simulations.
 #include "TransitCellProliferativeType.hpp" //Chaste file for defining proliferative types
-#include "UniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
+#include "FionaUniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
 #include "WildTypeCellMutationState.hpp" //Chaste file, Subclass of AbstractCellMutationState defining a 'wild type' mutation state.
 
 // Georgia specified files
-#include "FionaVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
-#include "ModifiedVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
+//#include "FionaVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
+#include "NewMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
 //#include "MyApoptoticCellKiller.hpp" // Georgia File for defining cell death
 #include "MyCellKiller.hpp" // Georgia File for defining cell death
 #include "PlaneStickyBoundaryCondition.hpp" // Georgia File that imposes boundary condition
-#include "VoronoiTargetAreaModifier.hpp" // Georgia file that updates target area modifier
+#include "FionaTargetAreaModifier.hpp" // Georgia file that updates target area modifier
 
 
 //Fiona added files
@@ -55,16 +55,15 @@
 //#include "CellAncestorWriter.hpp"
 
 // CODE ACTUALLY STARTS BELOW
-class TestFionaDorsalClosure : public AbstractCellBasedTestSuite
+class TestFionaNew : public AbstractCellBasedTestSuite
 {
 public:
 // Test Starts Here
-	void TestFionaSmallerMesh()
+	void TestFionaNewTest()
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
-		//FionaVoronoiVertexMeshGenerator generator(13,30,10,0,1.0); // GEORGIA FILE
 		
-        ModifiedVoronoiVertexMeshGenerator generator(6,20,6,0,1.0); // GEORGIA FILE
+        NewMeshGenerator generator(13,22,6,0,1.0); // GEORGIA FILE
 		
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh(); // Define as a mutable 2D vertex mesh
         
@@ -76,13 +75,13 @@ public:
         MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type); // Differentiated cells do not divide
 		MAKE_PTR(TransitCellProliferativeType, p_transit_type); // Transit cells can divide
 		MAKE_PTR(CellLabel, p_label); // LECs are labelled cells
-		
+		//MAKE_PTR(StemCellProliferativeType, p_stem_type);
 
 		// For each cell
 		for (unsigned cell_iter=0; cell_iter<p_mesh->GetNumElements(); ++cell_iter)
     	{
 			// Assign the cell cycle model to be a uniform G1 cell cycle
-			UniformG1GenerationalCellCycleModel* p_model = new UniformG1GenerationalCellCycleModel;
+			FionaUniformG1GenerationalCellCycleModel* p_model = new FionaUniformG1GenerationalCellCycleModel;
 
 			// Set the spatial dimension of each cell to be 2D
             p_model->SetDimension(2);
@@ -90,9 +89,33 @@ public:
 			// Set length of time that histoblast transit cells remains in G1
             p_model->SetTransitCellG1Duration(80);// This should be approx 8 times more than other 3 phases
 
+			c_vector<double, 2> this_location = p_mesh->GetCentroidOfElement(cell_iter);
+			//PRINT_VARIABLE(this_location);
+
+			if (this_location(1) < 1.6 || this_location(1) > 105.6) 
+			{
+				p_model->SetMaxTransitGenerations(2);
+			}
+			else if (this_location(1) > 1.6 && this_location(1) < 3.2) 
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			else if (this_location(1) > 104.3 && this_location(1) < 105.6) 
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			else
+			{
+				p_model->SetMaxTransitGenerations(0);
+			}
+			
+
+
+
+
 
 			// Set number of generations/divisions? How many generations a transit cell lives for before becoming fully differentiated.
-            p_model->SetMaxTransitGenerations(1); // (1 results in target area of histoblasts being roughly right at end)
+            //p_model->SetMaxTransitGenerations(1); // BaseCase=1(1 results in target area of histoblasts being roughly right at end)
 
 			// Birth time is the time that the cell was born (hours), can be negative if cell already alive befoore simulation
 			// Set birth time to be random number (0,1) mutiplied by stem cell life cycle hours. OTHER 3 phases approx 10 time units.
@@ -104,7 +127,7 @@ public:
             CellPtr p_cell(new Cell(p_state, p_model));
             //Set birth time to be value above
 			p_cell->SetBirthTime(birth_time);
-			
+			//p_cell->SetBirthTime(0);
             // Add data to the vector (add cells to vector of cell data)
             cells.push_back(p_cell);
 
@@ -122,59 +145,65 @@ public:
 			c_vector<double, 2> this_location = cell_population.GetLocationOfCellCentre(*cell_iter);
 
 			// Assign cells to LECs if in this area
-			if (this_location(1) > 8.0 && this_location(1) < 42.0) 
+			if (this_location(1) > 7.0 && this_location(1) < 100.0) 
 			{
 				cell_iter->AddCellProperty(p_label); // Label the LECS 
                 cell_iter->SetApoptosisTime(DBL_MAX); // Set apoptosis time to be infinte to start with or cell dies too quickly leaving gaps	
                 cell_iter->SetCellProliferativeType(p_diff_type); // Set to be differentiated/non-proliferative		
 			}
 			// Assign other cells (histoblasys) 
-            else
-            {
-                cell_iter->SetCellProliferativeType(p_transit_type);
+			else
+			{
+				cell_iter->SetCellProliferativeType(p_transit_type);
 				
+			}
+
                 //cell_iter->SetCellProliferativeType(p_diff_type);
-            }
-			// If outside the boundaries then kill the cells
-			if (this_location(0) < -0.2 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.8 && (this_location(1) < 8.0 || this_location(1) > 42.0)) 
-			{
-				cell_iter->Kill();
-			}
-			else if (this_location(0) > 29.0 && this_location(1) > 41.0 && this_location(1) < 45.5) 
-			{
-				cell_iter->Kill();
-			}
+            
+			// // If outside the boundaries then kill the cells
+			 if (this_location(0) < -0.2 && (this_location(1) < 7.0 || this_location(1) > 100.0)) 
+			 {
+			 	cell_iter->Kill();
+			 }
+			 else if (this_location(0) > 47.0 && (this_location(1) < 7.0 || this_location(1) > 100.0)) 
+			 {
+			 	cell_iter->Kill();
+			 }
+			
 		}
 
         OffLatticeSimulation<2> simulator(cell_population);
 		
 		// Set timestep details for simulatinos
-        simulator.SetOutputDirectory("TestFionaSmallerMesh");
-        simulator.SetSamplingTimestepMultiple(100); // 100 means each data value plotted is order 1 time unit
+        simulator.SetOutputDirectory("TestFionaNew");
+        simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
         simulator.SetEndTime(1000.0);
         
 		// Set the force to be used by cells to be a Farhadifar Force (CHASTE DEFINED). Forces defined here but not implemented until area modifier?
-        MAKE_PTR(FarhadifarForce<2>, p_force);
+        MAKE_PTR(FionaFarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
        
 	   // Update the target area of cells (GEORGIA DEFINED)
-        MAKE_PTR(VoronoiTargetAreaModifier<2>, p_growth_modifier);
+        MAKE_PTR(FionaTargetAreaModifier<2>, p_growth_modifier);
         simulator.AddSimulationModifier(p_growth_modifier);
 
 		// Include Volume Tracker - allows us to visualise/plot cell volumes/areas in paraview
 		MAKE_PTR(VolumeTrackingModifier<2>, p_modifier);
         simulator.AddSimulationModifier(p_modifier);
+
+		//c_vector<double, 2> bias_vector;
+        //bias_vector(0) = 0.0;
+        //bias_vector(1) = 1.0;
+		//MAKE_PTR_ARGS(DivisionBiasTrackingModifier<2>, p_modifier2, (bias_vector));
+        //simulator.AddSimulationModifier(p_modifier2);
+
 	
 
 		// Set c and y boundary points
-		double top_height = 49.5 ; 
+		double top_height = 106.8 ; 
 		double bottom_height = 0.4; 
-		double right_bound = 29.5; 
+		double right_bound = 46.85; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -192,13 +221,13 @@ public:
 			int elem_with_node = p_this_node->GetNumContainingElements();
 			if (elem_with_node == 1)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 )
+				if (node_position[1] < 8.0 && node_position[1] > 6.0 )
 				{
-					node_position[1] -= 1.0; 
+					node_position[1] -= 0.0; //0
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5)
+				else if (node_position[1] > 100.0 && node_position[1] < 103.0)
 				{
-					node_position[1] += 1.0; 
+					node_position[1] += 0.0; //0
 				}
 			}
 
@@ -217,67 +246,71 @@ public:
 			}
 			if (hb_neighbour == true && lec_neighbour == true)
 			{
-				if (node_position[1] < 10.0 && node_position[1] > 6.5 ) 
+				if (node_position[1] < 8.0 && node_position[1] > 6.0 ) 
 				{
-					node_position[1] -= 1.0; 
+					node_position[1] -= 0.0; //0
 				}
-				else if (node_position[1] > 40.5 && node_position[1] < 43.5) 
+				else if (node_position[1] > 100.0 && node_position[1] < 103.0) 
 				{
-					node_position[1] += 1.0; 
+					node_position[1] += 0.0; //0
 				}
 			}
+
+
+			if (node_position[1] > 100.0 && node_position[1] < 101.0)
+		 			{
+		 				node_position[1] += 1.0;//  1.5
+						
+		 			}
+					else if (node_position[1] > 6.5 && node_position[1] < 7.5)
+		 			{
+		 				node_position[1] -= 1.0;// 1.5
+						
+		 			}
+
+					if (node_position[1] > 101.0 && node_position[1] < 102.0)
+		 			{
+		 				node_position[1] += 1.0;//1
+						
+		 			}
+					else if (node_position[1] > 4.5 && node_position[1] < 7.0)
+		 			{
+		 				node_position[1] -= 1.0;//1
+						
+		 			}
+			
 		}
         
 		
 
 		
-		// Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
+		// // // Iterate over vertices in the cell population and ensure cells near the boundary are set as boundary nodes
 		for (unsigned node_index=0; node_index<num_nodes; node_index++)
 		{
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
-			if ( node_position[1] > 49.8 )
+			if ( node_position[1] > top_height-0.001)
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[1] = top_height + 0.001;
 			}
-			if ( node_position[1] < 0.2 )// no difference if set as 0.4
+			if ( node_position[1] < bottom_height+0.001 )// no difference if set as 0.4
 			{ 
 				p_this_node->SetAsBoundaryNode(true);
-			    node_position[1] = bottom_height - 0.001;
+			   node_position[1] = bottom_height - 0.001;
 			}
 
-			if ( node_position[0] < 0.01) //needs to be 0.01
+			if ( node_position[0] < left_bound + 0.01) //needs to be 0.01
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = left_bound - 0.001;
 			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 7.0 && node_position[1] < 41.0)//needed
+			if ( node_position[0] > right_bound-0.001 )//needed
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = right_bound + 0.001;
 			}
-			else if ( node_position[0] > 29.5 && node_position[1] < 5.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 29.54 && node_position[1] < 6.0 && node_position[1] > 5.8)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-				
-			}
-			else if ( node_position[0] > 29.5 && node_position[1] > 45.0)//not needed or at least until t=240
-			{
-				p_this_node->SetAsBoundaryNode(true);
-				node_position[0] = right_bound + 0.001;
-			}
-			else if ( node_position[0] > 28.9 && node_position[1] > 42.3 && node_position[1] < 45.5) //needed
-			{
-				p_this_node->SetAsBoundaryNode(true); 
-				node_position[0] = right_bound + 0.001;
-			}
+			
 			
 		
 		}
@@ -348,4 +381,4 @@ public:
     }
 };
 // END OF FILE
-#endif /*TESTFIONADORSALCLOSURE_HPP_*/
+#endif /*TESTFIONANEW_HPP_*/

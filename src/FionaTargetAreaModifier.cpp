@@ -33,7 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "VoronoiTargetAreaModifier.hpp"
+#include "FionaTargetAreaModifier.hpp"
 #include "AbstractPhaseBasedCellCycleModel.hpp"
 #include "ApoptoticCellProperty.hpp"
 #include "Debug.hpp"
@@ -45,16 +45,16 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Debug.hpp"
 #include "FarhadifarForce.hpp"
 template<unsigned DIM>
-VoronoiTargetAreaModifier<DIM>::VoronoiTargetAreaModifier()
+FionaTargetAreaModifier<DIM>::FionaTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(43.25)      //  12.5 if TestFionaElongated, 32 for TestFionaDorsalClosure, 37.5 for TestInitialConditionAlt
+      mLecArea(38)      //  12.5 if TestFionaElongated, 32 for TestFionaDorsalClosure, 37.5 for TestInitialConditionAlt
 {
 }
 
 template<unsigned DIM>
-VoronoiTargetAreaModifier<DIM>::~VoronoiTargetAreaModifier()
+FionaTargetAreaModifier<DIM>::~FionaTargetAreaModifier()
 {
 }
 
@@ -76,7 +76,7 @@ VoronoiTargetAreaModifier<DIM>::~VoronoiTargetAreaModifier()
 //}
 
 template<unsigned DIM>
-void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
+void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 {
     double cell_target_area;
     double lec_area = mLecArea;
@@ -134,6 +134,12 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     }
     double apoptosis_duration = mApoptosisDuration;
 
+
+    if (pCell->HasCellProperty<CellLabel>())
+    {
+
+        //cell_target_area *= 0.9;
+
     if (pCell->HasCellProperty<ApoptoticCellProperty>())
     {
         //PRINT_2_VARIABLES(pCell->GetCellId(), pCell->GetStartOfApoptosisTime());
@@ -187,6 +193,7 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
             }
         }
     }
+    }
 
     // Set cell data
     pCell->GetCellData()->SetItem("target area", cell_target_area);
@@ -194,45 +201,45 @@ void VoronoiTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 }
 
 template<unsigned DIM>
-double VoronoiTargetAreaModifier<DIM>::GetGrowthDuration()
+double FionaTargetAreaModifier<DIM>::GetGrowthDuration()
 {
     return mGrowthDuration;
 }
 
 template<unsigned DIM>
-void VoronoiTargetAreaModifier<DIM>::SetGrowthDuration(double growthDuration)
+void FionaTargetAreaModifier<DIM>::SetGrowthDuration(double growthDuration)
 {
     assert(growthDuration >= 0.0);
     mGrowthDuration = growthDuration;
 }
 
 template<unsigned DIM>
-double VoronoiTargetAreaModifier<DIM>::GetApoptosisDuration()
+double FionaTargetAreaModifier<DIM>::GetApoptosisDuration()
 {
     return mApoptosisDuration;
 }
 
 template<unsigned DIM>
-void VoronoiTargetAreaModifier<DIM>::SetApoptosisDuration(double apoptosisDuration)
+void FionaTargetAreaModifier<DIM>::SetApoptosisDuration(double apoptosisDuration)
 {
     assert(apoptosisDuration >= 0.0);
     mApoptosisDuration = apoptosisDuration;
 }
 
 template<unsigned DIM>
-double VoronoiTargetAreaModifier<DIM>::GetLecArea()
+double FionaTargetAreaModifier<DIM>::GetLecArea()
 {
     return mLecArea;
 }
 
 template<unsigned DIM>
-void VoronoiTargetAreaModifier<DIM>::SetLecArea(double lecArea)
+void FionaTargetAreaModifier<DIM>::SetLecArea(double lecArea)
 {
     assert(lecArea >= 0.0);
     mLecArea = lecArea;
 }
 template<unsigned DIM>
-void VoronoiTargetAreaModifier<DIM>::OutputSimulationModifierParameters(out_stream& rParamsFile)
+void FionaTargetAreaModifier<DIM>::OutputSimulationModifierParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<GrowthDuration>" << mGrowthDuration << "</GrowthDuration>\n";
     *rParamsFile << "\t\t\t<ApoptosisDuration>" << mApoptosisDuration << "</ApoptosisDuration>\n";
@@ -243,10 +250,10 @@ void VoronoiTargetAreaModifier<DIM>::OutputSimulationModifierParameters(out_stre
 }
 
 // Explicit instantiation
-template class VoronoiTargetAreaModifier<1>;
-template class VoronoiTargetAreaModifier<2>;
-template class VoronoiTargetAreaModifier<3>;
+template class FionaTargetAreaModifier<1>;
+template class FionaTargetAreaModifier<2>;
+template class FionaTargetAreaModifier<3>;
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(VoronoiTargetAreaModifier)
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(FionaTargetAreaModifier)

@@ -82,7 +82,8 @@ void MyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     {
         //lecs are labelled, and are given larger target area
         cell_target_area = this->mReferenceTargetArea;
-        cell_target_area *= 25.0*sqrt(3.0)/2.0;
+        cell_target_area *= 32;//25.0*sqrt(3.0)/2.0;
+        
         //cell_target_area *= 0.125;
         //cell_target_area *= 2.5;
         //cell_target_area *= 5.0;
@@ -93,7 +94,7 @@ void MyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     {
         //hbs given target area = 1
         cell_target_area = this->mReferenceTargetArea;
-        cell_target_area *= sqrt(3.0)/2.0;
+        //cell_target_area *= sqrt(3.0)/2.0;
     }
     double growth_duration = mGrowthDuration;
     if (growth_duration == DOUBLE_UNSET)
@@ -128,7 +129,7 @@ void MyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 
         //current time minus time when the cell became apoptotic 
         double time_spent_apoptotic = SimulationTime::Instance()->GetTime() - pCell->GetStartOfApoptosisTime();
-        cell_target_area *= 1.0 - time_spent_apoptotic/apoptosis_duration;
+        cell_target_area *= (1.0 - time_spent_apoptotic/apoptosis_duration);
         //area is a positive quantity 
         if (cell_target_area < 0)
         {

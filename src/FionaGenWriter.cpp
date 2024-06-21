@@ -53,6 +53,7 @@ FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::FionaGenWriter()
     : AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>("results.vizgenerations")
 {
     this->mVtkCellDataName = "Generation";
+    
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
