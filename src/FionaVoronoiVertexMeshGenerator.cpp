@@ -89,11 +89,13 @@ std::vector<c_vector<double, 2> > FionaVoronoiVertexMeshGenerator::GetInitialPoi
 
     //lec row starts after mNumHbRows of histoblasts the length will determined by an equal mixture of length between points of the hexagon (2l) and length of the hexagon (l)
    // double initial_lec_height = (((mNumHbRows)/2))*2*hb_edge_length + (((mNumHbRows)/2))*hb_edge_length;//- 0.5*lec_scaled_height*lec_edge_length;
-     double initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+     //double initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
    
 
     //top hb row starts after first rows of histoblasts and all lec rows which are a scaled height
     //double initial_hb_height = initial_lec_height + ((mNumLecRows)/2)*2*lec_scaled_height*lec_edge_length + ((mNumLecRows)/2)*lec_scaled_height*lec_edge_length- 0.5*lec_scaled_height*lec_edge_length;
+    double initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+   
     double initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
 
     // start calculating seed positions

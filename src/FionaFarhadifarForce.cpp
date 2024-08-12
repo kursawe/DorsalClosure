@@ -35,6 +35,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FionaFarhadifarForce.hpp"
 #include "Debug.hpp"
+#include "CellLabel.hpp"
 
 template<unsigned DIM>
 FionaFarhadifarForce<DIM>::FionaFarhadifarForce()
@@ -84,6 +85,23 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
     {
         unsigned elem_index = elem_iter->GetIndex();
         element_areas[elem_index] = p_cell_population->rGetMesh().GetVolumeOfElement(elem_index);
+        
+
+        if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+        {
+            mAreaElasticityParameter=1*1.0;
+            mPerimeterContractilityParameter=0.04;
+            mLineTensionParameter = 1*0.12;
+            mBoundaryLineTensionParameter=1*0.12;
+        }
+        else
+        {
+            mAreaElasticityParameter=1.0;
+            mPerimeterContractilityParameter=0.04;
+            mLineTensionParameter = 0.12;
+            mBoundaryLineTensionParameter=0.12;
+        }
+
         element_perimeters[elem_index] = p_cell_population->rGetMesh().GetSurfaceAreaOfElement(elem_index);
 
         if (using_target_area_modifier)
@@ -93,6 +111,8 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
         else
         {
             target_areas[elem_index] = mTargetAreaParameter;
+
+
         }
     }
 

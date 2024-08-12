@@ -1,41 +1,5 @@
-/*
-
-Copyright (c) 2005-2022, University of Oxford.
-All rights reserved.
-
-University of Oxford means the Chancellor, Masters and Scholars of the
-University of Oxford, having an administrative office at Wellington
-Square, Oxford OX1 2JD, UK.
-
-This file is part of Chaste.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
- * Neither the name of the University of Oxford nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-
-#include "NewMeshGenerator.hpp"
+#include "MeshGeneratorJuly.hpp"
 #include "Debug.hpp"
-//#include <algorithm>
 
 #if BOOST_VERSION >= 105200
 
@@ -43,7 +7,7 @@ using boost::polygon::voronoi_builder;
 using boost::polygon::voronoi_diagram;
 typedef boost::polygon::point_data<int> boost_point;
 
-NewMeshGenerator::NewMeshGenerator(unsigned numElementsX,
+MeshGeneratorJuly::MeshGeneratorJuly(unsigned numElementsX,
                                                        unsigned numElementsY,
                                                        unsigned numHbRows,
                                                        unsigned numRelaxationSteps,
@@ -56,169 +20,88 @@ NewMeshGenerator::NewMeshGenerator(unsigned numElementsX,
           mNumRelaxationSteps(numRelaxationSteps),
           mElementTargetArea(elementTargetArea),
           mTol(1e-7),
-          mMaxExpectedNumSidesPerPolygon(17)
+          mMaxExpectedNumSidesPerPolygon(6)
 {
-    this->ValidateInputAndSetMembers();
-    this->GenerateVoronoiMesh();
-
-   
+    this->ValidateInputAndSetMembers(); // FUNCTION A
+    this->GenerateVoronoiMesh(); // FUNCTION B
 }
 
-
-
-// This is where actual initial conditions set.
-std::vector<c_vector<double, 2> > NewMeshGenerator::GetInitialPointLocations()
-{ //Helper method for the constructor. Produces a vector of random seed points, with some validation, that lie in the rectangle [0.0, mMultiplierInX] x [0.0, mMultiplierInY]. These seeds are used for the initial Voronoi diagram construction, before any steps of Lloyd's relaxation.
-    
-    // Create a vector which contains mTotalNumElements spaces
-    std::vector<c_vector<double, 2> > seed_points(mTotalNumElements);
-
-    unsigned point_idx = 0;
-    //edge length denotes length of side of regular hexagon 
-
-    double hb_edge_length = sqrt(2.0)/(sqrt(3.0*sqrt(3.0))); // chosen such that the area of each hb is 1
-    double lec_scale_hb_width = 5.0;
-    double lec_edge_length = lec_scale_hb_width*hb_edge_length; // chosen such that lecs are a larger than hbs 
-    double lec_scaled_height = 3.0; //
-    double initial_lec_height = (0.5*(3))*(mNumHbRows)*hb_edge_length + lec_scaled_height*lec_edge_length;//correct
-    double initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length + 0.75*lec_scaled_height*lec_edge_length;//correct
-    
-    for (unsigned point_idx_y = 0 ; point_idx_y < mNumElementsY ; point_idx_y++)
-    {
-        if (point_idx_y < mNumHbRows)
-        //histoblasts on bottom of mesh - smaller spacing for smaller cells
-        {
-            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX*5.0 ; point_idx_x++)
-            { 
-                if (point_idx_y%2 == 0)
-                {
-                    
-                    seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                    
-                }
-                else
-                {
-                    seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;//correct
-                    
-                }
-                seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*point_idx_y)*mMultiplierInY ;//correct
-                
-                point_idx += 1;
-                if (point_idx_y == (mNumHbRows - 1))
-                {
-                    // if (point_idx_x%5 == 0 || point_idx_x%5 == 1 || point_idx_x%5 ==4)
-                    // {
-                    //     if (point_idx_y%2 == 0)
-                    //     {
-                    //         seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                    //     }
-                    //     else
-                    //     {
-                    //         seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;
-                    //     }
-                    //     seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*(point_idx_y + 1.0))*mMultiplierInY ;
-                    //     point_idx += 1;
-
-                    // }
-                     if (point_idx_x%5 == 2 || point_idx_x%5 == 3 || point_idx_x%5 ==4)
-                    {
-                        if (point_idx_y%2 == 0)
-                        {
-                             seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX; //correct
-                            //seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                        }
-                        else
-                        {
-                            //seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;
-                            seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                        }
-                        //seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*(point_idx_y + 0.3))*mMultiplierInY ;
-                        seed_points[point_idx][1]=(hb_edge_length + (3.0/2.0)*hb_edge_length*(point_idx_y+0.2))*mMultiplierInY;//correct
-                        point_idx += 1;
-                    }
-                  
-                }
-            }
-        }
-        else if (point_idx_y >= mNumHbRows && point_idx_y < (mNumElementsY - mNumHbRows))
-        //lecs - bigger spacing for bigger cells
-        {
-            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX ; point_idx_x++)
-            { 
-                if (point_idx_y%2 == 0)
-                {
-                    seed_points[point_idx][0] = ((sqrt(3.0)/2.0)*lec_edge_length + sqrt(3.0)*lec_edge_length*point_idx_x)*mMultiplierInX; //correct
-                }
-                else
-                {
-                    seed_points[point_idx][0] = (sqrt(3.0)*lec_edge_length*point_idx_x)*mMultiplierInX;//correct
-                    
-                }
-                seed_points[point_idx][1] = (initial_lec_height + lec_scaled_height*(3.0*lec_edge_length/2.0)*(point_idx_y-mNumHbRows))*mMultiplierInY;//correct
-               
-                point_idx += 1;
-            }
-        }
-        else
-        // histoblasts on top of mesh - smaller spacing for smaller cells
-        {
-            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX*5.0 ; point_idx_x++)
-            {
-                if (point_idx_y%2 == 0)
-                {
-                    seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                }
-                else
-                {
-                    seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                }
-                seed_points[point_idx][1] = (initial_hb_height  + (3.0/2.0)*hb_edge_length*(point_idx_y-mNumElementsY+mNumHbRows))*mMultiplierInY ;//correct
-                
-                point_idx += 1;
-                if (point_idx_y == (mNumElementsY - mNumHbRows))
-                {
-                    // if (point_idx_x%5 == 2 || point_idx_x%5 == 3 || point_idx_x%5 ==4)
-                    // {
-                    //     if (point_idx_y%2 == 0)
-                    //     {
-                    //         seed_points[point_idx][0] = (-(sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                    //     }
-                    //     else
-                    //     {
-                    //         seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                    //     }
-                    //     seed_points[point_idx][1] = (initial_hb_height + (3.0*hb_edge_length/2.0)*(point_idx_y - mNumElementsY + mNumHbRows - 1.0))*mMultiplierInY; ;
-                    //     point_idx += 1;
-                    // }
-                     if (point_idx_x%5 == 0 || point_idx_x%5 == 1 || point_idx_x%5 ==4)
-                    {
-                        if (point_idx_y%2 == 0)
-                        {
-                            //seed_points[point_idx][0] = (-(sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                            seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                        }
-                        else
-                        {
-                            //seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
-                            seed_points[point_idx][0] = (-(sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;//correct
-                        
-                        }
-                        seed_points[point_idx][1] = (initial_hb_height + (3.0*hb_edge_length/2.0)*(point_idx_y - mNumElementsY + mNumHbRows-0.2 ))*mMultiplierInY; ;
-                        point_idx += 1;
-                    }
-                  
-                }
-            }
-        }
-    
-    }
-   
-    return seed_points;
-}
-
-void NewMeshGenerator::ValidateInputAndSetMembers()
+/////////////////////////////////////////////////////
+// FUNCTION A: Validate Input and Set Members (Modifiable, where everything set)
+/////////////////////////////////////////////////////
+void MeshGeneratorJuly::ValidateInputAndSetMembers()
 { //Helper method for the constructor. Validates the input parameters, and sets up remaining member variables.
     
+    // Length of one edge of a histoblast
+    hb_edge_length = sqrt(2.0)/(sqrt(3.0*sqrt(3.0))); //CHECKED
+
+    // Scaled length of short edge of a LEC of histoblast
+    lec_scale_hb_width = 5.0;  //CHECKED
+
+    // Scaled length of short edge of a LEC
+    lec_edge_length = lec_scale_hb_width*hb_edge_length;  //CHECKED
+
+    // Scaled length of long edge of a LEC compared to short edge
+    lec_scaled_height = 3.0;  //CHECKED
+
+    // Total number of LECs requested
+    double mNumLecs = (mNumElementsY-2*mNumHbRows)*mNumElementsX;  //CHECKED
+
+    // Total number of HBs requested, Bottom and top boundary rows of hbs = 104 cells each
+    double mNumHbs = ((2*(mNumHbRows-1))*lec_scale_hb_width*mNumElementsX)+208;  //CHECKED
+
+    // Total number of cells requested
+    mTotalNumElements = mNumLecs+mNumHbs;  ///CHECKED
+    //PRINT_VARIABLE(mTotalNumElements);
+   
+    // BOUNDARY ROWS MEANS THESE ARE NOT EXACT _ OLD VALUES SEEM TO WORK BETTER
+    // Initial position of first row of LECS = height of one rows of histoblasts + half a Lec height
+    //initial_lec_height = (3.0/2.0)*hb_edge_length*(mNumHbRows) + 0.5*(2+lec_scaled_height)*lec_edge_length;
+    // OLD//
+    initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+    PRINT_VARIABLE(initial_lec_height); 
+
+    // BOUNDARY ROWS MEANS THESE ARE NOT EXACT _ OLD VALUES SEEM TO WORK BETTER
+    // Initial position of second row of histoblasts
+    //initial_hb_height = initial_lec_height+0.5*(2+lec_scaled_height)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows-1)+hb_edge_length;
+    //OLD//
+    initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+    PRINT_VARIABLE(initial_hb_height); 
+
+    // Mutiplier in Y direction // CHECKED
+    double HeightAllDomain = initial_hb_height + (3.0/2.0)*hb_edge_length*(mNumHbRows)-hb_edge_length; // CHECKED
+    mMultiplierInY = 1.0/HeightAllDomain; // CHECKED
+    //OLD// mMultiplierInY = 1.0*(1.0/(initial_hb_height + (3.0*hb_edge_length*(mNumHbRows-1.0)/2.0) + hb_edge_length));
+
+    // Multiplier in X direction // CHECKED
+    double WidthHbRow = sqrt(3.0)*hb_edge_length*lec_scale_hb_width*mNumElementsX; // CHECKED
+    mMultiplierInX = 1.0/WidthHbRow; // CHECKED
+
+    // Max of the numbers of elements across or up
+    mMaxNumElems = lec_scale_hb_width*mNumElementsX; // CHECKED
+
+    // We need to modify the node locations to achieve the correct target average element area
+    scale_factor = (1/(mMultiplierInY)) * sqrt(mElementTargetArea); //CHECKED
+
+    // Floating point representation of INT_MAX/2
+    mSamplingMultiplier = 0.5 * double(INT_MAX); // CHECKED
+
+    if (mMultiplierInX < mMultiplierInY) // REQUIRED
+    {
+        //MARK;
+        mMaxIntX = int( floor( (mSamplingMultiplier) + 0.5 ) );
+        mMaxIntY = int( floor( ((mMultiplierInX/mMultiplierInY)*mSamplingMultiplier) + 0.5 ) );
+        mMultiplierInY = mMultiplierInX;
+    }
+    else
+    {
+        mMaxIntX = int( floor( ((mMultiplierInY/mMultiplierInX)*mSamplingMultiplier) + 0.5 ) );
+        mMaxIntY = int( floor( (mSamplingMultiplier) + 0.5 ) );
+        mMultiplierInX = mMultiplierInY;
+    }
+    PRINT_VARIABLE(mMultiplierInX);
+    PRINT_VARIABLE(mMultiplierInY);
+
     // Validate inputs
     if ((mNumElementsX < 2) || (mNumElementsY < 2))
     {
@@ -234,52 +117,221 @@ void NewMeshGenerator::ValidateInputAndSetMembers()
     {
         EXCEPTION("Specified target area must be strictly positive");
     }
+}
 
-    // The total number of elements requested
-    mTotalNumElements = (mNumElementsX * (mNumElementsY + mNumHbRows*8.0 + 6.0)); //correct
-
-    PRINT_VARIABLE(mTotalNumElements);
-    // Max of the numbers of elements across and up
-    unsigned mNumHbs = 5.0*mNumElementsX; //correct
-    mMaxNumElems = std::max(mNumHbs, mNumElementsY);//correct
-
-    // The multipliers necessary in x and y to ensure all seed points are in [0,1]x[0,1]
-
-    double hb_edge_length = sqrt(2.0)/(sqrt(3.0*sqrt(3.0))); // chosen such that the area of each hb is 1
-    double lec_scale_hb_width = 5.0;
-    double lec_edge_length = lec_scale_hb_width*hb_edge_length; // chosen such that lecs are a larger than hbs 
-    double lec_scaled_height = 3.0; //
-    double initial_lec_height = (0.5*(3))*(mNumHbRows)*hb_edge_length + lec_scaled_height*lec_edge_length;//correct
-    double initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length + 0.75*lec_scaled_height*lec_edge_length;//correct
+/////////////////////////////////////////////////////
+// FUNCTION B: Generate Voronoi Mesh (Nothing to Modify)
+/////////////////////////////////////////////////////
+void MeshGeneratorJuly::GenerateVoronoiMesh()
+{//Helper function for the constructor: allows a new mesh to be generated by the user if they don't like the current one.
     
-   
-    mMultiplierInY = 1.0/(initial_hb_height + ((2+sqrt(3))*hb_edge_length*(mNumHbRows)/2.0)); //correct
-    mMultiplierInX = 1.0/(sqrt(3.0)*lec_edge_length*mNumElementsX); // correct
+    /**
+     * The initial points will be randomly distributed in the box [0.0, mMultiplierInX] x [0.0, mMultiplierInY], which
+     * is a subset of the box [0.0, 1.0] x [0.0, 1.0].  At least one of mMultiplierInX and mMultiplierInY will equal
+     * 1.0, and this will depend whether more elements were requested in the x direction or y direction.
+     */
 
+    // Get initial seed locations
+    std::vector<c_vector<double, 2> > seed_locations = this->GetInitialPointLocations(); // FUNCTION C
+    this->ValidateSeedLocations(seed_locations); // FUNCTION D
 
-    PRINT_VARIABLE(mMultiplierInX);
-    PRINT_VARIABLE(mMultiplierInY);
-    // Floating point representation of INT_MAX/2
-    mSamplingMultiplier = 0.5 * double(INT_MAX);
+    // We now create the initial Voronoi tessellation. This method updates mpMesh.
+    this->CreateVoronoiTessellation(seed_locations); // FUNCTION E
 
-    if (mMultiplierInX < mMultiplierInY)
+    for (unsigned node_idx = 0 ; node_idx < mpMesh->GetNumNodes() ; node_idx++)
     {
-        //MARK;
-        mMaxIntX = int( floor( (mSamplingMultiplier) + 0.5 ) );
-        mMaxIntY = int( floor( ((mMultiplierInX/mMultiplierInY)*mSamplingMultiplier) + 0.5 ) );
-        mMultiplierInY = mMultiplierInX;
+        c_vector<double, 2>& node_location = mpMesh->GetNode(node_idx)->rGetModifiableLocation();
+        node_location *= scale_factor;
     }
-    else
+  
+}
+
+/////////////////////////////////////////////////////
+// FUNCTION C: Get Initial Point Locations (Modifiable)
+/////////////////////////////////////////////////////
+std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetInitialPointLocations()
+{ //Helper method for the constructor. Produces a vector of random seed points, with some validation, that lie in the rectangle [0.0, mMultiplierInX] x [0.0, mMultiplierInY]. These seeds are used for the initial Voronoi diagram construction, before any steps of Lloyd's relaxation.
+    
+    // Create a vector which contains mTotalNumElements spaces
+    std::vector<c_vector<double, 2> > seed_points(mTotalNumElements);
+
+    unsigned point_idx = 0;
+    //edge length denotes length of side of regular hexagon 
+
+
+     // start calculating seed positions
+    for (unsigned point_idx_y = 0 ; point_idx_y < mNumElementsY ; point_idx_y++)
     {
-        mMaxIntX = int( floor( ((mMultiplierInY/mMultiplierInX)*mSamplingMultiplier) + 0.5 ) );
-        mMaxIntY = int( floor( (mSamplingMultiplier) + 0.5 ) );
-        mMultiplierInX = mMultiplierInY;
+        // Start with first mNumHbRows of histoblasts
+        if (point_idx_y < mNumHbRows)
+        //histoblasts on bottom of mesh - smaller spacing for smaller cells
+        {
+            // For cells in x direction
+            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX*lec_scale_hb_width ; point_idx_x++)
+            { 
+                // Split into even and odd to get interlocking hexagons
+                if (point_idx_y%2 == 0)
+                {
+                    seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                }
+                else
+                {
+                    seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;
+                }
+                seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*point_idx_y)*mMultiplierInY ;
+                point_idx += 1;
+                if (point_idx_y == (mNumHbRows - 1))
+                {
+                    
+                    //if (point_idx_x%5 == 0 || point_idx_x%5 == 1 || point_idx_x%5 ==4)
+                    if (point_idx_x%5 == 2 || point_idx_x%5 == 3 || point_idx_x%5 ==4)
+                    {
+                        if (point_idx_y%2 == 0)
+                        {
+                             seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;
+                            //seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                        }
+                        else
+                        {
+                            //seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX;
+                            seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                        }
+                        seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*(point_idx_y + 1.0))*mMultiplierInY ;
+                        point_idx += 1;
+                    }
+                }
+            }
+        }
+        else if (point_idx_y >= mNumHbRows && point_idx_y < (mNumElementsY - mNumHbRows))
+        //lecs - bigger spacing for bigger cells
+        {
+            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX ; point_idx_x++)
+            { 
+                if (point_idx_y%2 == 0)
+                {
+                    seed_points[point_idx][0] = ((sqrt(3.0)/2.0)*lec_edge_length + sqrt(3.0)*lec_edge_length*point_idx_x)*mMultiplierInX; 
+                }
+                else
+                {
+                    seed_points[point_idx][0] = (sqrt(3.0)*lec_edge_length*point_idx_x)*mMultiplierInX;
+                }
+                seed_points[point_idx][1] = (initial_lec_height + lec_scaled_height*(3.0*lec_edge_length/2.0)*(point_idx_y-mNumHbRows))*mMultiplierInY;
+                point_idx += 1;
+            }
+        }
+        else
+        // histoblasts on top of mesh - smaller spacing for smaller cells
+        {
+            for (unsigned point_idx_x = 0 ; point_idx_x < mNumElementsX*lec_scale_hb_width ; point_idx_x++)
+            {
+                if (point_idx_y%2 == 0)
+                {
+                    seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                }
+                else
+                {
+                    seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                }
+                seed_points[point_idx][1] = (initial_hb_height + (3.0*hb_edge_length/2.0)*(point_idx_y - mNumElementsY + mNumHbRows))*mMultiplierInY;
+
+                point_idx += 1;
+                if (point_idx_y == (mNumElementsY - mNumHbRows))
+                {
+                    if (point_idx_x%5 == 0 || point_idx_x%5 == 1 || point_idx_x%5 ==4)
+                    {
+                        if (point_idx_y%2 == 0)
+                        {
+                            //seed_points[point_idx][0] = (-(sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                            seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                        }
+                        else
+                        {
+                            //seed_points[point_idx][0] = (sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                            seed_points[point_idx][0] = (-(sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
+                        
+                        }
+                        seed_points[point_idx][1] = (initial_hb_height + (3.0*hb_edge_length/2.0)*(point_idx_y - mNumElementsY + mNumHbRows-1.0 ))*mMultiplierInY; ;
+                        point_idx += 1;
+                    }
+                }
+            }
+        }
+    }
+    return seed_points;
+}
+
+/////////////////////////////////////////////////////
+// FUNCTION D: Validate Seed Locations (Nothing to Modify as long as others correct*)
+/////////////////////////////////////////////////////
+void MeshGeneratorJuly::ValidateSeedLocations(std::vector<c_vector<double, 2> >& rSeedLocations)
+{//Helper method for the constructor. Validates the initial random seed locations, making minute adjustments to seed locations if two points would be mapped to the same integer lattice point after discretisation. This functionality is in a separate method to allow effective unit testing.
+    //MARK; // MET FUNCTION RUNS
+    unsigned num_seeds = rSeedLocations.size();
+    
+    /*
+     * Seeds at least 1.0 / mSamplingMultiplier apart from each other
+     * are acceptable; the 1.5 term below could just as well be any
+     * number that is strictly greater than 1.0.
+     */
+    double safe_distance = 1.5 / mSamplingMultiplier;
+    
+    // If we find a seed that needs to move position, we will move it and start checking again from the beginning
+    bool recheck = true;
+
+    while (recheck)
+    {
+        // If no seeds needs moving (as is overwhelmingly likely), we do not need to check again
+        recheck = false;
+
+        // We check each seed against every other, without double counting
+        for (unsigned seed_idx_one = 0; seed_idx_one < num_seeds; seed_idx_one++)
+        {
+            for (unsigned seed_idx_two = seed_idx_one + 1; seed_idx_two < num_seeds; seed_idx_two++)
+            {
+                // We get the distance between the two seeds currently being considered
+                c_vector<double, 2> one_to_two = rSeedLocations[seed_idx_two] - rSeedLocations[seed_idx_one];
+                double distance = norm_2(one_to_two);
+                if (distance < safe_distance)
+                {
+                    // We will now need to re-check
+                    recheck = true;
+
+                    /*
+                     * If the distance is non-zero, we will move the second seed away along the line joining the two
+                     * seeds until it's at the safe distance. If the distance is somehow zero, we will just move the
+                     * x-location of the second seed by the safe distance.
+                     *
+                     * In all cases, we also need to ensure the new location is within the boundary box.
+                     */
+                    if (distance > DBL_EPSILON)
+                    {
+                        double multiplier = safe_distance / distance;
+                        rSeedLocations[seed_idx_two] += (one_to_two * multiplier);
+
+                        rSeedLocations[seed_idx_two][0] = fmod(rSeedLocations[seed_idx_two][0] + mMultiplierInX, mMultiplierInX);
+                        rSeedLocations[seed_idx_two][1] = fmod(rSeedLocations[seed_idx_two][1] + mMultiplierInX, mMultiplierInX);
+                    }
+                    else
+                    {
+                        rSeedLocations[seed_idx_two][0] += safe_distance;
+                        rSeedLocations[seed_idx_two][0] = fmod(rSeedLocations[seed_idx_two][0], mMultiplierInX);
+                    }
+                }
+            }
+
+            // We will re-check now rather than finishing the outer loop first
+            if (recheck)
+            {
+                break;
+            }
+        }
     }
 }
 
-
-
-void NewMeshGenerator::CreateVoronoiTessellation(std::vector<c_vector<double, 2> >& rSeedLocations)
+/////////////////////////////////////////////////////
+// FUNCTION E: Create Voronoi Tesselation (Nothing to Modify as long as others correct*)
+/////////////////////////////////////////////////////
+void MeshGeneratorJuly::CreateVoronoiTessellation(std::vector<c_vector<double, 2> >& rSeedLocations)
 { //Helper method for the constructor. Takes seed locations and updates mpMesh with Nodes and VertexElements corresponding to a Voronoi diagram derived from the seed points. Boundary effects are eliminated by considering a 3x3 tessellation of the seed points and only keeping those Voronoi cells corresponding to seed points in the centre tile. Each seed point must lie in [0.0, mMultiplierInX] x [0.0, mMultiplierInY] for the tessellation to be valid.
     
     // Clear the mesh nodes and elements, as they will be replaced in this method
@@ -366,18 +418,12 @@ void NewMeshGenerator::CreateVoronoiTessellation(std::vector<c_vector<double, 2>
 
             do
             {
-                double current_a = 0.6;//0.765725;//0.901227; //user set
-		        double desired_a = 1;
-
-		        double node_multiplier = desired_a/current_a;
                 if (edge->is_primary())
                 {
+
                     // Calculate the location corresponding to the location of vertex0 of the current edge
                     double x_location = (edge->vertex0()->x()) / mSamplingMultiplier;
                     double y_location = (edge->vertex0()->y()) / mSamplingMultiplier;
-
-                    x_location *= node_multiplier;
-                    y_location *= node_multiplier;
                 
                     // Create a node at this location.  Default to non-boundary node; this will be updated later
                     Node<2>* p_this_node = new Node<2>(nodes.size(), false, x_location, y_location);
@@ -505,110 +551,26 @@ void NewMeshGenerator::CreateVoronoiTessellation(std::vector<c_vector<double, 2>
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
-// CHECKED BELOW (I THINK)
+// Extra Functions Below (Should be Standard Below)
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 
-std::vector<c_vector<double, 2> > NewMeshGenerator::GetElementCentroidsFromMesh()
-{//Helper method for the constructor.
-    //assert(mpMesh->GetNumElements() == (mNumElementsX * (mNumElementsY + mNumHbRows*8.0 + 6.0)));
 
-    std::vector<c_vector<double, 2> > element_centroids;
-
-    // Loop over all elements in the mesh
-    for (unsigned elem_idx = 0; elem_idx < mpMesh->GetNumElements(); elem_idx++)
-    {
-        // Get the current centroid of the element
-        c_vector<double, 2> this_centroid = mpMesh->GetCentroidOfElement(elem_idx);
-
-        /**
-         * We cannot be certain the centroid is in the correct location: while the initial seed points are all located
-         * in the correct bounding rectangle, after each Voronoi tessellation step, the centroids might move out of
-         * this box.  We can correct for this by exploiting the periodicity which we have because of the 3x3 tiling.
-         */
-
-        // Account for possible wrap-around in the x-direction
-        if (this_centroid[0] < 0.0)
-        {
-            this_centroid[0] += mMultiplierInX;
-        }
-        else if (this_centroid[0] > mMultiplierInX)
-        {
-            this_centroid[0] -= mMultiplierInX;
-        }
-
-        // Account for possible wrap-around in the y-direction
-        if (this_centroid[1] < 0.0)
-        {
-            this_centroid[1] += mMultiplierInY;
-        }
-        else if (this_centroid[1] > mMultiplierInY)
-        {
-            this_centroid[1] -= mMultiplierInY;
-        }
-
-        element_centroids.push_back(this_centroid);
-    }
-
-    return element_centroids;
-}
-
-NewMeshGenerator::~NewMeshGenerator()
-{ //Destructor - deletes the mesh object and pointer.
-    if (mpMesh)
-    {
-        delete mpMesh;
-    }
-    if (mpTorMesh)
-    {
-        delete mpTorMesh;
-    }
-}
-
-void NewMeshGenerator::GenerateVoronoiMesh()
-{//Helper function for the constructor: allows a new mesh to be generated by the user if they don't like the current one.
-    
-    /**
-     * The initial points will be randomly distributed in the box [0.0, mMultiplierInX] x [0.0, mMultiplierInY], which
-     * is a subset of the box [0.0, 1.0] x [0.0, 1.0].  At least one of mMultiplierInX and mMultiplierInY will equal
-     * 1.0, and this will depend whether more elements were requested in the x direction or y direction.
-     */
-
-    // Get initial seed locations
-    std::vector<c_vector<double, 2> > seed_locations = this->GetInitialPointLocations();
-    this->ValidateSeedLocations(seed_locations);
-
-    // We now create the initial Voronoi tessellation. This method updates mpMesh.
-    this->CreateVoronoiTessellation(seed_locations);
-
-    // We need to modify the node locations to achieve the correct target average element area
-    double scale_factor = double(mMaxNumElems) * sqrt(mElementTargetArea); //should be fine
-    PRINT_VARIABLE(scale_factor);
-    PRINT_VARIABLE(mElementTargetArea);
-    PRINT_VARIABLE(mMaxNumElems);
-    for (unsigned node_idx = 0 ; node_idx < mpMesh->GetNumNodes() ; node_idx++)
-    {
-        c_vector<double, 2>& node_location = mpMesh->GetNode(node_idx)->rGetModifiableLocation();
-        node_location *= scale_factor;
-    }
-  
-}
-
-MutableVertexMesh<2,2>* NewMeshGenerator::GetMesh()
+MutableVertexMesh<2,2>* MeshGeneratorJuly::GetMesh()
 {//A pointer to a 2D mutable vertex mesh
     return mpMesh;
 }
 
- MutableVertexMesh<2,2>* NewMeshGenerator::GetMeshAfterReMesh()
+ MutableVertexMesh<2,2>* MeshGeneratorJuly::GetMeshAfterReMesh()
  {//A pointer to a 2D mutable vertex mesh, after ReMesh() has been called to remove short edges
      mpMesh->ReMesh();
      return mpMesh;   
 }
 
-Toroidal2dVertexMesh* NewMeshGenerator::GetToroidalMesh()
+Toroidal2dVertexMesh* MeshGeneratorJuly::GetToroidalMesh()
 {//A pointer to a 2D toroidal vertex mesh with periodic boundaries
    
     /*
@@ -805,7 +767,63 @@ Toroidal2dVertexMesh* NewMeshGenerator::GetToroidalMesh()
     return mpTorMesh;
 }
 
-bool NewMeshGenerator::CheckForCongruentNodes(MutableVertexMesh<2,2>* pMesh, double width, double height)
+std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetElementCentroidsFromMesh()
+{//Helper method for the constructor.
+    //assert(mpMesh->GetNumElements() == (mNumElementsX * (mNumElementsY + mNumHbRows*8.0 + 6.0)));
+
+    std::vector<c_vector<double, 2> > element_centroids;
+
+    // Loop over all elements in the mesh
+    for (unsigned elem_idx = 0; elem_idx < mpMesh->GetNumElements(); elem_idx++)
+    {
+        // Get the current centroid of the element
+        c_vector<double, 2> this_centroid = mpMesh->GetCentroidOfElement(elem_idx);
+
+        /**
+         * We cannot be certain the centroid is in the correct location: while the initial seed points are all located
+         * in the correct bounding rectangle, after each Voronoi tessellation step, the centroids might move out of
+         * this box.  We can correct for this by exploiting the periodicity which we have because of the 3x3 tiling.
+         */
+
+        // Account for possible wrap-around in the x-direction
+        if (this_centroid[0] < 0.0)
+        {
+            this_centroid[0] += mMultiplierInX;
+        }
+        else if (this_centroid[0] > mMultiplierInX)
+        {
+            this_centroid[0] -= mMultiplierInX;
+        }
+
+        // Account for possible wrap-around in the y-direction
+        if (this_centroid[1] < 0.0)
+        {
+            this_centroid[1] += mMultiplierInY;
+        }
+        else if (this_centroid[1] > mMultiplierInY)
+        {
+            this_centroid[1] -= mMultiplierInY;
+        }
+
+        element_centroids.push_back(this_centroid);
+    }
+
+    return element_centroids;
+}
+
+MeshGeneratorJuly::~MeshGeneratorJuly()
+{ //Destructor - deletes the mesh object and pointer.
+    if (mpMesh)
+    {
+        delete mpMesh;
+    }
+    if (mpTorMesh)
+    {
+        delete mpTorMesh;
+    }
+}
+
+bool MeshGeneratorJuly::CheckForCongruentNodes(MutableVertexMesh<2,2>* pMesh, double width, double height)
 { //Helper method for GetToroidalMesh(). Takes the first boundary node, A, and checks it for congruence in position with all other boundary nodes. If a congruent location is found, then A replaces the congruent node and this function returns true. If none are found, A is tagged as no longer being a boundary node.
 
     // First find all the current boundary nodes in pMesh
@@ -903,73 +921,7 @@ bool NewMeshGenerator::CheckForCongruentNodes(MutableVertexMesh<2,2>* pMesh, dou
     return true;
 }
 
-void NewMeshGenerator::ValidateSeedLocations(std::vector<c_vector<double, 2> >& rSeedLocations)
-{//Helper method for the constructor. Validates the initial random seed locations, making minute adjustments to seed locations if two points would be mapped to the same integer lattice point after discretisation. This functionality is in a separate method to allow effective unit testing.
-    //MARK; // MET FUNCTION RUNS
-    unsigned num_seeds = rSeedLocations.size();
-    
-    /*
-     * Seeds at least 1.0 / mSamplingMultiplier apart from each other
-     * are acceptable; the 1.5 term below could just as well be any
-     * number that is strictly greater than 1.0.
-     */
-    double safe_distance = 1.5 / mSamplingMultiplier;
-    
-
-    // If we find a seed that needs to move position, we will move it and start checking again from the beginning
-    bool recheck = true;
-
-    while (recheck)
-    {
-        // If no seeds needs moving (as is overwhelmingly likely), we do not need to check again
-        recheck = false;
-
-        // We check each seed against every other, without double counting
-        for (unsigned seed_idx_one = 0; seed_idx_one < num_seeds; seed_idx_one++)
-        {
-            for (unsigned seed_idx_two = seed_idx_one + 1; seed_idx_two < num_seeds; seed_idx_two++)
-            {
-                // We get the distance between the two seeds currently being considered
-                c_vector<double, 2> one_to_two = rSeedLocations[seed_idx_two] - rSeedLocations[seed_idx_one];
-                double distance = norm_2(one_to_two);
-                if (distance < safe_distance)
-                {
-                    // We will now need to re-check
-                    recheck = true;
-
-                    /*
-                     * If the distance is non-zero, we will move the second seed away along the line joining the two
-                     * seeds until it's at the safe distance. If the distance is somehow zero, we will just move the
-                     * x-location of the second seed by the safe distance.
-                     *
-                     * In all cases, we also need to ensure the new location is within the boundary box.
-                     */
-                    if (distance > DBL_EPSILON)
-                    {
-                        double multiplier = safe_distance / distance;
-                        rSeedLocations[seed_idx_two] += (one_to_two * multiplier);
-
-                        rSeedLocations[seed_idx_two][0] = fmod(rSeedLocations[seed_idx_two][0] + mMultiplierInX, mMultiplierInX);
-                        rSeedLocations[seed_idx_two][1] = fmod(rSeedLocations[seed_idx_two][1] + mMultiplierInX, mMultiplierInX);
-                    }
-                    else
-                    {
-                        rSeedLocations[seed_idx_two][0] += safe_distance;
-                        rSeedLocations[seed_idx_two][0] = fmod(rSeedLocations[seed_idx_two][0], mMultiplierInX);
-                    }
-                }
-            }
-
-            // We will re-check now rather than finishing the outer loop first
-            if (recheck)
-            {
-                break;
-            }
-        }
-    }
-}
-
-std::vector<double> NewMeshGenerator::GetPolygonDistribution()
+std::vector<double> MeshGeneratorJuly::GetPolygonDistribution()
 {//Returns a vector representing the polygon distribution of the generated mesh, triangles upwards
     
     assert(mpMesh != nullptr);
@@ -1013,7 +965,7 @@ std::vector<double> NewMeshGenerator::GetPolygonDistribution()
     return polygon_dist;
 }
 
-double NewMeshGenerator::GetAreaCoefficientOfVariation()
+double MeshGeneratorJuly::GetAreaCoefficientOfVariation()
 {//Computes the coefficient of variation of the areas of elements in the mesh, defined to be the sample standard deviation in area divided by the mean area.
     
     assert(mpMesh != nullptr);
@@ -1036,19 +988,19 @@ double NewMeshGenerator::GetAreaCoefficientOfVariation()
     return sqrt(var) / mElementTargetArea;
 }
 
-void NewMeshGenerator::RefreshSeedsAndRegenerateMesh()
+void MeshGeneratorJuly::RefreshSeedsAndRegenerateMesh()
 {//Call GenerateVoronoiMesh(). Allows the user to make a new mesh, for instance if trying to generate a specific polygon distribution
     
     this->GenerateVoronoiMesh();
 }
 
-void NewMeshGenerator::SetMaxExpectedNumSidesPerPolygon(unsigned maxExpectedNumSidesPerPolygon)
+void MeshGeneratorJuly::SetMaxExpectedNumSidesPerPolygon(unsigned maxExpectedNumSidesPerPolygon)
 {//Set mMaxNumSidesPerPolygon.
     
     mMaxExpectedNumSidesPerPolygon = maxExpectedNumSidesPerPolygon;
 }
 
-unsigned NewMeshGenerator::GetMaxExpectedNumSidesPerPolygon()
+unsigned MeshGeneratorJuly::GetMaxExpectedNumSidesPerPolygon()
 {//Returns:mMaxNumSidesPerPolygon
     return mMaxExpectedNumSidesPerPolygon;
 }
@@ -1060,7 +1012,7 @@ unsigned NewMeshGenerator::GetMaxExpectedNumSidesPerPolygon()
  * This is a fake class to suppress coverage warnings. To get the real class
  * you must build with Boost version 1.52 or above.
  */
-NewMeshGenerator::MyVoronoiVertexMeshGenerator()
+MeshGeneratorJuly::MyVoronoiVertexMeshGenerator()
 {
     EXCEPTION("This is a dummy class. Build with Boost version 1.52 or above for functionality.");
 }

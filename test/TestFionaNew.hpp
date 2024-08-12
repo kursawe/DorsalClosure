@@ -176,15 +176,15 @@ public:
 		
 		// Set timestep details for simulatinos
         simulator.SetOutputDirectory("TestFionaNew");
-        simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
+        simulator.SetSamplingTimestepMultiple(100); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
-        simulator.SetEndTime(1000.0);
+        simulator.SetEndTime(00);
         
 		// Set the force to be used by cells to be a Farhadifar Force (CHASTE DEFINED). Forces defined here but not implemented until area modifier?
         MAKE_PTR(FionaFarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
        
-	   // Update the target area of cells (GEORGIA DEFINED)
+	   // Update the target area of ceells (GEORGIA DEFINED)
         MAKE_PTR(FionaTargetAreaModifier<2>, p_growth_modifier);
         simulator.AddSimulationModifier(p_growth_modifier);
 

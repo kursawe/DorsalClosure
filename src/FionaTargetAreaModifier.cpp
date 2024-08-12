@@ -49,7 +49,7 @@ FionaTargetAreaModifier<DIM>::FionaTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(38)      //  12.5 if TestFionaElongated, 32 for TestFionaDorsalClosure, 37.5 for TestInitialConditionAlt
+      mLecArea(75.0)      //  75 for July? 37.5 for FionaNew
 {
 }
 
@@ -78,39 +78,34 @@ FionaTargetAreaModifier<DIM>::~FionaTargetAreaModifier()
 template<unsigned DIM>
 void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 {
+
+
+
     double cell_target_area;
     double lec_area = mLecArea;
 
-    
-    
+
     // if (pCell->GetCellId()==273)
     // {
     //     pCell->
     // }
 
 
-
-	 //VertexBasedCellPopulation<SPACE_DIM>* p_CellPopulation = static_cast<VertexBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
-	 //VertexElement<SPACE_DIM, SPACE_DIM>* this_element = p_CellPopulation->GetElementCorrespondingToCell(*cell_iter);
-	 //unsigned number_nodes = this_element->GetNumNodes();
-	 //for (unsigned node_index=0; node_index < number_nodes; node_index++)
-	 //{
-	 //	PRINT_VECTOR(this_element->GetNode(node_index)->rGetLocation());
-
-//	 }
-
     // Get target area A of a healthy cell in S, G2 or M phase
     if (pCell->HasCellProperty<CellLabel>())
     {
         //lecs are labelled, and are given larger target area
         
+        
         cell_target_area = lec_area;
-       
+
+
     }
     else
     {
         //hbs given target area = 1
         cell_target_area = 1*this->mReferenceTargetArea;  //ResultsNew=1
+
         //cell_target_area *= 1.0;
     }
     double growth_duration = mGrowthDuration;
@@ -176,7 +171,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         // The target area of a proliferating cell increases linearly from A/2 to A over the course of the prescribed duration
         if (cell_age < growth_duration)
         {
-            cell_target_area *= 0.5*(1 + cell_age/growth_duration);
+            cell_target_area *= 1;//0.5*(1 + cell_age/growth_duration);
         }
         else
         {

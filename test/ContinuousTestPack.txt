@@ -1,14 +1,3 @@
-TestHello.hpp
-TestFirstSimulationFile.hpp
-TestPrevTestsFirstDorsalClosure.hpp
-TestClosureV0.hpp
-TestVoronoiMeshV01.hpp
-TestNoVoids.hpp
-TestVoronoiMeshV02.hpp
-TestVoronoiMeshHalfSize.hpp
-TestFionaDorsalClosure.hpp
-TestFionaElongated.hpp
 TestOriginalInitialCondition.hpp
-TestFionaInitialConditionAlt.hpp
-TestOneCell.hpp
 TestFionaNew.hpp
+TestFionaNew_InitialConditionJuly

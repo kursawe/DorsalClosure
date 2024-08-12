@@ -60,6 +60,17 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 double FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation)
 {
   double gen;
+  //if (pCell->GetCellId()==100)
+  //{
+  //  double checkhbvolume = pCell->GetCellData()->GetItem("volume");
+  //  PRINT_VARIABLE(checkhbvolume)
+  //}
+
+  //if (pCell->GetCellId()==50)
+  //{
+  //  double checklecvolume = pCell->GetCellData()->GetItem("volume");
+  //  PRINT_VARIABLE(checklecvolume)
+  //}
 
   if (pCell->HasCellProperty<CellLabel>())
     {
@@ -68,6 +79,7 @@ double FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(CellPtr p
     else
 		{
       gen = static_cast<UniformG1GenerationalCellCycleModel*>(pCell->GetCellCycleModel())->GetGeneration();
+        
     }
     return gen;
 }
@@ -89,6 +101,7 @@ void FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, AbstractCe
       colour = gen;
     }
 
+    
 
 
     *this->mpOutStream << colour << " ";
