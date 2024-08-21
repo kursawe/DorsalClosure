@@ -49,7 +49,7 @@ FionaTargetAreaModifier<DIM>::FionaTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(75.0)      //  75 for July? 37.5 for FionaNew
+      mLecArea(75)      //  75 for July? 37.5 for FionaNew
 {
 }
 
@@ -85,11 +85,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     double lec_area = mLecArea;
 
 
-    // if (pCell->GetCellId()==273)
-    // {
-    //     pCell->
-    // }
-
+    
 
     // Get target area A of a healthy cell in S, G2 or M phase
     if (pCell->HasCellProperty<CellLabel>())
@@ -133,7 +129,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     if (pCell->HasCellProperty<CellLabel>())
     {
 
-        //cell_target_area *= 0.9;
+       //cell_target_area *= 0.9;
 
     if (pCell->HasCellProperty<ApoptoticCellProperty>())
     {
@@ -143,12 +139,14 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         //but in TestClosureV0 it is longer than 2 time units as there are other forces opposing the growth to the target area size//
         if (pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime() < growth_duration)
         {
-            //MARK;
+         //   MARK;
             cell_target_area *= 0.5*(1 + (pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime())/growth_duration);
 
       
 
         }
+        else
+        {
 
         
 
@@ -156,6 +154,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         double time_spent_apoptotic = SimulationTime::Instance()->GetTime() - pCell->GetStartOfApoptosisTime();
         cell_target_area *= 1.0 - (1*(time_spent_apoptotic/apoptosis_duration));
         //area is a positive quantity 
+        }
 
         if (cell_target_area < 0)
         {
@@ -164,6 +163,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         //unsigned num_lecs = CellPropertyRegistry::Instance()->Get<CellLabel>()->GetCellCount();
 		//PRINT_VARIABLE(num_lecs);
     }
+    }
     else
     {
         double cell_age = pCell->GetAge();
@@ -171,7 +171,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         // The target area of a proliferating cell increases linearly from A/2 to A over the course of the prescribed duration
         if (cell_age < growth_duration)
         {
-            cell_target_area *= 1;//0.5*(1 + cell_age/growth_duration);
+            cell_target_area *= 0.5*(1 + cell_age/growth_duration);
         }
         else
         {
@@ -188,7 +188,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
             }
         }
     }
-    }
+    
 
     // Set cell data
     pCell->GetCellData()->SetItem("target area", cell_target_area);

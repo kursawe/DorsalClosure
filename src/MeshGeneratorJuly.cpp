@@ -847,6 +847,9 @@ bool MeshGeneratorJuly::CheckForCongruentNodes(MutableVertexMesh<2,2>* pMesh, do
     // Otherwise, calculate the eight possible congruent locations for the current node
     Node<2>* p_node_a = *(boundary_nodes.begin());
     c_vector<double, 2> node_a_pos = p_node_a->rGetLocation();
+
+    
+
     std::vector<c_vector<double,2> > congruent_locations(8, node_a_pos);
 
     congruent_locations[0][0] += width;

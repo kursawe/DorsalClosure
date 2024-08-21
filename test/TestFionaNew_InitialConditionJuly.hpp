@@ -172,6 +172,13 @@ public:
 			  {
 			  	cell_iter->Kill();
 			  }
+			  
+			  //if (this_location(0) > 67.0 && (this_location(1) > 142.0 && this_location(1) < 145.0)) 
+			  //{
+			  //	cell_iter->Kill();
+
+				
+			  //}
 
 
 			 
@@ -215,7 +222,7 @@ public:
 		// // Set c and y boundary points
 		double top_height = 150.2 ; 
 		double bottom_height = 0.6; 
-		double right_bound = 67.16; 
+		double right_bound = 67.16;//+1.3; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -233,22 +240,31 @@ public:
 			// Move all of the boundary cell nodes to reduce height of boundary layers
 			if (node_position[1] > 143.0 && node_position[1] < 144.0)
 			{
-		 		node_position[1] += 0.0;//1
+		 		node_position[1] += 1.0;//1
 		 	}
 			else if (node_position[1] > 7.0 && node_position[1] < 8.0)
 			{
-				node_position[1] -= 0.0;//1		
+				node_position[1] -= 1.0;//1		
 		 	}
 
 			// Move bottom of bottom LECs down and Top of top Lecs up
 			if (node_position[1] > 141.0 && node_position[1] < 142.0)
 			{
-				node_position[1] += 0.0;//  2.5
+				node_position[1] += 2.5;//  2.5
 			}
 			else if (node_position[1] > 8.5 && node_position[1] < 10.0)
 		 	{
-		 	node_position[1] -= 0.0;// 2.5
+		 	node_position[1] -= 2.5;// 2.5
 			}
+
+			// if (node_position[1] > 140.0 && node_position[1] < 141.5)
+			// {
+			// 	node_position[1] += 1.0;//  2.5
+			// }
+
+
+			
+			
 
 			
 			
@@ -278,16 +294,16 @@ public:
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = left_bound - 0.001;
 			}
-			if ( node_position[0] > right_bound-0.001 )//needed
+			if ( node_position[0] > right_bound-0.01 )//needed
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = right_bound + 0.001;
 			}
 			
-			//if ( node_position[0] < left_bound + 1 && node_position[1] < 5.0 && node_position[1] > 4.5) //needs to be 0.01
+			//if ( node_position[0] > right_bound-2.0 && node_position[1] > 10.0 && node_position[1] < 143.0) //needs to be 0.01
 			//{
 			//	p_this_node->SetAsBoundaryNode(true); 
-			//	//node_position[0] = left_bound - 0.001;
+			//	node_position[0] = right_bound + 0.001;
 			//}
 			
 		
