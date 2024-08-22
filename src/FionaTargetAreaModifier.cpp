@@ -49,7 +49,7 @@ FionaTargetAreaModifier<DIM>::FionaTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(75)      //  75 for July? 37.5 for FionaNew
+      mLecArea(37.5)      //  75 for July? 37.5 for FionaNew
 {
 }
 
