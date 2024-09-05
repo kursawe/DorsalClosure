@@ -87,24 +87,6 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
         element_areas[elem_index] = p_cell_population->rGetMesh().GetVolumeOfElement(elem_index);
         
 
-        if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-        {
-            mAreaElasticityParameter=1*1.0;
-            mPerimeterContractilityParameter=1*0.04;
-            mLineTensionParameter = 1*0.12;
-            mBoundaryLineTensionParameter=1*0.12;
-
-             //PRINT_VARIABLE(mLineTensionParameter);
-            //MARK;
-        }
-        else
-        {
-            mAreaElasticityParameter=1.0;
-            mPerimeterContractilityParameter=0.04;
-            mLineTensionParameter = 0.12;
-            mBoundaryLineTensionParameter=0.12;
-        }
-
         element_perimeters[elem_index] = p_cell_population->rGetMesh().GetSurfaceAreaOfElement(elem_index);
 
         if (using_target_area_modifier)
@@ -179,14 +161,10 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
            
            //if (target_areas[elem_index]>0)
            //{
-           if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-            {
-            area_elasticity_contribution -= 1*GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-            }
-            else
-            {
+           
+            
             area_elasticity_contribution -= GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-            }
+            
            //}
            //else
            //{
@@ -219,21 +197,14 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
            
             //if (target_areas[elem_index]>0)
             //{
-             if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-            {
+                
             
-                line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
-            }
-            else
-            {
-                line_tension_contribution -= previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient;
-            }
-            
+                    line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
 
             //}
-           // else
+            //else
             //{
-             //   line_tension_contribution -= 1*previous_edge_line_tension_parameter*previous_edge_gradient + 1*next_edge_line_tension_parameter*next_edge_gradient;
+            //    line_tension_contribution -= 1*previous_edge_line_tension_parameter*previous_edge_gradient + 10*next_edge_line_tension_parameter*next_edge_gradient;
             //}
                 
 
@@ -242,22 +213,9 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             c_vector<double, DIM> element_perimeter_gradient;
             element_perimeter_gradient = previous_edge_gradient + next_edge_gradient;
 
-            if (target_areas[elem_index]>0)
-            {
-                if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-            {
-                perimeter_contractility_contribution -= 1*GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
-            }
-            else
-            {
-                perimeter_contractility_contribution -= GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
-            }
-            }
-            else
-            {
-                perimeter_contractility_contribution -= 10*(GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient);
-       
-            }
+            
+            perimeter_contractility_contribution -= GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
+            
            
         }
 

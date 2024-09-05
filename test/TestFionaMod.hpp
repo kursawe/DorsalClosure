@@ -1,5 +1,5 @@
-#ifndef TESTFIONANEW_HPP_
-#define TESTFIONANEW_HPP_
+#ifndef TESTFIONAMOD_HPP_
+#define TESTFIONAMOD_HPP_
 
 //INCLUDE NECCESSARY FILES
 
@@ -35,12 +35,12 @@
 #include "DifferentiatedCellProliferativeType.hpp" //Chaste file for defining differentiated type
 #include "FionaFarhadifarForce.hpp" //Chaste file, A force class for use in Vertex-based simulations.
 #include "TransitCellProliferativeType.hpp" //Chaste file for defining proliferative types
-#include "FionaUniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
+#include "UniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
 #include "WildTypeCellMutationState.hpp" //Chaste file, Subclass of AbstractCellMutationState defining a 'wild type' mutation state.
 
 // Georgia specified files
 //#include "FionaVoronoiVertexMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
-#include "NewMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
+#include "ModMeshGenerator.hpp" // Georgia File that generates cell populations and initial condition
 //#include "MyApoptoticCellKiller.hpp" // Georgia File for defining cell death
 #include "MyCellKiller.hpp" // Georgia File for defining cell death
 #include "PlaneStickyBoundaryCondition.hpp" // Georgia File that imposes boundary condition
@@ -55,15 +55,15 @@
 //#include "CellAncestorWriter.hpp"
 
 // CODE ACTUALLY STARTS BELOW
-class TestFionaNew : public AbstractCellBasedTestSuite
+class TestFionaMod : public AbstractCellBasedTestSuite
 {
 public:
 // Test Starts Here
-	void TestFionaNewTest()
+	void TestFionaModTest()
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
 		
-        NewMeshGenerator generator(13,22,6,0,1.0); // GEORGIA FILE
+        ModMeshGenerator generator(13,22,6,0,1.0); // GEORGIA FILE
 		
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh(); // Define as a mutable 2D vertex mesh
         
@@ -81,7 +81,7 @@ public:
 		for (unsigned cell_iter=0; cell_iter<p_mesh->GetNumElements(); ++cell_iter)
     	{
 			// Assign the cell cycle model to be a uniform G1 cell cycle
-			FionaUniformG1GenerationalCellCycleModel* p_model = new FionaUniformG1GenerationalCellCycleModel;
+			UniformG1GenerationalCellCycleModel* p_model = new UniformG1GenerationalCellCycleModel;
 
 			// Set the spatial dimension of each cell to be 2D
             p_model->SetDimension(2);
@@ -98,15 +98,15 @@ public:
 			}
 			else if (this_location(1) > 1.6 && this_location(1) < 3.2) 
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(2);
 			}
 			else if (this_location(1) > 104.3 && this_location(1) < 105.6) 
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(2);
 			}
 			else
 			{
-				p_model->SetMaxTransitGenerations(0);
+				p_model->SetMaxTransitGenerations(2);
 			}
 			
 
@@ -145,7 +145,7 @@ public:
 			c_vector<double, 2> this_location = cell_population.GetLocationOfCellCentre(*cell_iter);
 
 			// Assign cells to LECs if in this area
-			if (this_location(1) > 7.0 && this_location(1) < 100.0) 
+			if (this_location(1) > 10.0 && this_location(1) < 144.0) 
 			{
 				cell_iter->AddCellProperty(p_label); // Label the LECS 
                 cell_iter->SetApoptosisTime(DBL_MAX); // Set apoptosis time to be infinte to start with or cell dies too quickly leaving gaps	
@@ -160,31 +160,31 @@ public:
 
                 //cell_iter->SetCellProliferativeType(p_diff_type);
             
-			// // If outside the boundaries then kill the cells
-			 if (this_location(0) < -0.2 && (this_location(1) < 7.0 || this_location(1) > 100.0)) 
-			 {
-			 	cell_iter->Kill();
-			 }
-			 else if (this_location(0) > 47.0 && (this_location(1) < 7.0 || this_location(1) > 100.0)) 
-			 {
-			 	cell_iter->Kill();
-			 }
+			 // If outside the boundaries then kill the cells
+		  	if (this_location(0) < -0.2 && (this_location(1) < 10.0 || this_location(1) > 144.0)) 
+			{
+				cell_iter->Kill();
+			}
+			else if (this_location(0) > 68.5 && (this_location(1) < 10.0 || this_location(1) > 144.0)) 
+			{
+		  		cell_iter->Kill();
+			}
 			
 		}
 
         OffLatticeSimulation<2> simulator(cell_population);
 		
 		// Set timestep details for simulatinos
-        simulator.SetOutputDirectory("TestFionaNew");
+        simulator.SetOutputDirectory("TestFionaMod");
         simulator.SetSamplingTimestepMultiple(100); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
-        simulator.SetEndTime(00);
+        simulator.SetEndTime(1000.0);
         
 		// Set the force to be used by cells to be a Farhadifar Force (CHASTE DEFINED). Forces defined here but not implemented until area modifier?
         MAKE_PTR(FionaFarhadifarForce<2>, p_force);
         simulator.AddForce(p_force);
        
-	   // Update the target area of ceells (GEORGIA DEFINED)
+	   // Update the target area of cells (GEORGIA DEFINED)
         MAKE_PTR(FionaTargetAreaModifier<2>, p_growth_modifier);
         simulator.AddSimulationModifier(p_growth_modifier);
 
@@ -201,9 +201,9 @@ public:
 	
 
 		// Set c and y boundary points
-		double top_height = 106.8 ; 
-		double bottom_height = 0.4; 
-		double right_bound = 46.85; 
+		double top_height = 152.8 ; 
+		double bottom_height = 0.6; 
+		double right_bound = 68.1; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -215,67 +215,26 @@ public:
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
 
-			std::set<unsigned> containing_element_indices = p_this_node->rGetContainingElementIndices();
-			bool hb_neighbour = false;
-			bool lec_neighbour = false;
-			int elem_with_node = p_this_node->GetNumContainingElements();
-			if (elem_with_node == 1)
-			{
-				if (node_position[1] < 8.0 && node_position[1] > 6.0 )
-				{
-					node_position[1] -= 0.0; //0
-				}
-				else if (node_position[1] > 100.0 && node_position[1] < 103.0)
-				{
-					node_position[1] += 0.0; //0
-				}
-			}
 
-			for (std::set<unsigned>::iterator iter = containing_element_indices.begin();
-             iter != containing_element_indices.end();
-             iter++)
-        	{
-				if (cell_population.GetCellUsingLocationIndex(*iter)->template HasCellProperty<CellLabel>())
-				{
-					hb_neighbour = true;
-				}
-				else
-				{
-					lec_neighbour = true;
-				}
-			}
-			if (hb_neighbour == true && lec_neighbour == true)
-			{
-				if (node_position[1] < 8.0 && node_position[1] > 6.0 ) 
-				{
-					node_position[1] -= 0.0; //0
-				}
-				else if (node_position[1] > 100.0 && node_position[1] < 103.0) 
-				{
-					node_position[1] += 0.0; //0
-				}
-			}
-
-
-			if (node_position[1] > 100.0 && node_position[1] < 101.0)
+			if (node_position[1] > 143.5 && node_position[1] < 144.5)
 		 			{
-		 				node_position[1] += 1.0;//  1.5
+		 				node_position[1] += 2.0;//1.5;// 
 						
 		 			}
-					else if (node_position[1] > 6.5 && node_position[1] < 7.5)
+					else if (node_position[1] > 10.0 && node_position[1] < 12.0)
 		 			{
-		 				node_position[1] -= 1.0;// 1.5
+		 				node_position[1] -= 2.0;//2.5;//
 						
 		 			}
 
-					if (node_position[1] > 101.0 && node_position[1] < 102.0)
+					if (node_position[1] > 145.0 && node_position[1] < 147.0)
 		 			{
-		 				node_position[1] += 1.0;//1
+		 				node_position[1] += 0;//1.0;//
 						
 		 			}
-					else if (node_position[1] > 4.5 && node_position[1] < 7.0)
+					else if (node_position[1] > 7.0 && node_position[1] < 8.0)
 		 			{
-		 				node_position[1] -= 1.0;//1
+		 				node_position[1] -= 0;//1.0;//
 						
 		 			}
 			
@@ -305,7 +264,7 @@ public:
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = left_bound - 0.001;
 			}
-			if ( node_position[0] > right_bound-0.001 )//needed
+			if ( node_position[0] > right_bound-0.01 )//needed
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = right_bound + 0.001;
@@ -381,4 +340,4 @@ public:
     }
 };
 // END OF FILE
-#endif /*TESTFIONANEW_HPP_*/
+#endif /*TESTFIONAMOD_HPP_*/
