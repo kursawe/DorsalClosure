@@ -58,15 +58,23 @@ void MeshGeneratorJuly::ValidateInputAndSetMembers()
     // Initial position of first row of LECS = height of one rows of histoblasts + half a Lec height
     //initial_lec_height = (3.0/2.0)*hb_edge_length*(mNumHbRows) + 0.5*(2+lec_scaled_height)*lec_edge_length;
     // OLD//
-    initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+    //initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + 0.8*lec_scaled_height*lec_edge_length;
     //PRINT_VARIABLE(initial_lec_height); 
+
+    
+    initial_lec_height = (hb_edge_length + (3.0/2.0)*hb_edge_length*(mNumHbRows - 1.0)) + hb_edge_length/2.0 + lec_scaled_height*lec_edge_length;
+
+    
 
     // BOUNDARY ROWS MEANS THESE ARE NOT EXACT _ OLD VALUES SEEM TO WORK BETTER
     // Initial position of second row of histoblasts
     //initial_hb_height = initial_lec_height+0.5*(2+lec_scaled_height)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows-1)+hb_edge_length;
     //OLD//
-    initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length/2.0 + 0.75*lec_scaled_height*lec_edge_length;
+    //initial_hb_height = initial_lec_height + lec_scaled_height*(3.0/2.0)*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length/2.0 + 0.8*lec_scaled_height*lec_edge_length;
     //PRINT_VARIABLE(initial_hb_height); 
+
+    initial_hb_height = initial_lec_height + (3.0/2.0)*lec_scaled_height*lec_edge_length*(mNumElementsY - 2.0*mNumHbRows - 1.0) + hb_edge_length/2.0 + lec_scaled_height*lec_edge_length;
+
 
     // Mutiplier in Y direction // CHECKED
     double HeightAllDomain = initial_hb_height + (3.0/2.0)*hb_edge_length*(mNumHbRows)-hb_edge_length; // CHECKED
@@ -156,7 +164,7 @@ std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetInitialPointLocations()
 
     unsigned point_idx = 0;
     //edge length denotes length of side of regular hexagon 
-    double node_adjustment=1;
+    double node_adjustment=0.2;
 
 
      // start calculating seed positions
@@ -197,6 +205,7 @@ std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetInitialPointLocations()
                             seed_points[point_idx][0] = ((-sqrt(3.0)/2.0)*hb_edge_length + sqrt(3.0)*hb_edge_length*(point_idx_x))*mMultiplierInX ;
                         }
                         seed_points[point_idx][1] = (hb_edge_length + (3.0/2.0)*hb_edge_length*(point_idx_y + node_adjustment))*mMultiplierInY ;
+
                         point_idx += 1;
                     }
                 }
@@ -237,6 +246,7 @@ std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetInitialPointLocations()
                 point_idx += 1;
                 if (point_idx_y == (mNumElementsY - mNumHbRows))
                 {
+                   // if (point_idx_x%5 == 2 || point_idx_x%5 == 3 || point_idx_x%5 ==4)
                     if (point_idx_x%5 == 0 || point_idx_x%5 == 1 || point_idx_x%5 ==4)
                     {
                         if (point_idx_y%2 == 0)
@@ -273,7 +283,7 @@ void MeshGeneratorJuly::ValidateSeedLocations(std::vector<c_vector<double, 2> >&
      * are acceptable; the 1.5 term below could just as well be any
      * number that is strictly greater than 1.0.
      */
-    double safe_distance = 1.5 / mSamplingMultiplier;
+    double safe_distance = 2.0 / mSamplingMultiplier;
     
     // If we find a seed that needs to move position, we will move it and start checking again from the beginning
     bool recheck = true;

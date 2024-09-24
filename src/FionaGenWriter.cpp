@@ -59,18 +59,8 @@ FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::FionaGenWriter()
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 double FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation)
 {
-  double gen;
-  //if (pCell->GetCellId()==100)
-  //{
-  //  double checkhbvolume = pCell->GetCellData()->GetItem("volume");
-  //  PRINT_VARIABLE(checkhbvolume)
-  //}
 
-  //if (pCell->GetCellId()==50)
-  //{
-  //  double checklecvolume = pCell->GetCellData()->GetItem("volume");
-  //  PRINT_VARIABLE(checklecvolume)
-  //}
+  double gen;
 
   if (pCell->HasCellProperty<CellLabel>())
     {

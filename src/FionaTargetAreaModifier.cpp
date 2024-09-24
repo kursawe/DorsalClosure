@@ -14,7 +14,7 @@ FionaTargetAreaModifier<DIM>::FionaTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(38.0)      //  12.5 if TestFionaElongated, 32 for TestFionaDorsalClosure, 37.5 for TestInitialConditionAlt
+      mLecArea(36.6053)      //  36.6053, 12.5 if TestFionaElongated, 32 for TestFionaDorsalClosure, 37.5 for TestInitialConditionAlt
 {
 }
 
@@ -99,6 +99,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     }
     double apoptosis_duration = mApoptosisDuration;
 
+
     if (pCell->HasCellProperty<ApoptoticCellProperty>())
     {
         //PRINT_2_VARIABLES(pCell->GetCellId(), pCell->GetStartOfApoptosisTime());
@@ -118,7 +119,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 
         //current time minus time when the cell became apoptotic 
         double time_spent_apoptotic = SimulationTime::Instance()->GetTime() - pCell->GetStartOfApoptosisTime();
-        cell_target_area *= 1.0 - (1.0*(time_spent_apoptotic/apoptosis_duration));
+        cell_target_area *= 1.0 - (0.5*(time_spent_apoptotic/apoptosis_duration));
         //area is a positive quantity 
 
         if (cell_target_area < 0)
@@ -131,12 +132,12 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     else
     {
 
-        //if (pCell->HasCellProperty<CellLabel>())
-        //{
-        //    cell_target_area*=1;
-        //}
-        //else
-        //{
+        if (pCell->HasCellProperty<CellLabel>())
+        {
+            cell_target_area=lec_area;
+        }
+        else
+        {
 
 
         double cell_age = pCell->GetAge();
@@ -160,7 +161,7 @@ void FionaTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
                 cell_target_area = 0.5*this->mReferenceTargetArea;
             }
         }
-        //}
+        }
     }
 
     // Set cell data

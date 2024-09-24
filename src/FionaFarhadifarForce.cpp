@@ -42,8 +42,8 @@ FionaFarhadifarForce<DIM>::FionaFarhadifarForce()
    : AbstractForce<DIM>(),
      mAreaElasticityParameter(1.0), // These parameters are Case I in Farhadifar's paper
      mPerimeterContractilityParameter(0.04),//0.04
-     mLineTensionParameter(0.12),
-     mBoundaryLineTensionParameter(0.12), // This parameter as such does not exist in Farhadifar's model 0.12
+     mLineTensionParameter(1.0*0.12),
+     mBoundaryLineTensionParameter(1.0*0.12), // This parameter as such does not exist in Farhadifar's model 0.12
      mTargetAreaParameter(1.0)
 {
 }
@@ -79,6 +79,7 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
     std::vector<double> element_areas(num_elements);
     std::vector<double> element_perimeters(num_elements);
     std::vector<double> target_areas(num_elements);
+
     for (typename VertexMesh<DIM,DIM>::VertexElementIterator elem_iter = p_cell_population->rGetMesh().GetElementIteratorBegin();
          elem_iter != p_cell_population->rGetMesh().GetElementIteratorEnd();
          ++elem_iter)
@@ -99,29 +100,14 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
 
 
         }
+
     }
+
 
     // Iterate over vertices in the cell population
     for (unsigned node_index=0; node_index<num_nodes; node_index++)
     {
         Node<DIM>* p_this_node = p_cell_population->GetNode(node_index);
-
-       // c_vector<double, DIM>& node_position = p_this_node->rGetModifiableLocation();
-        //p_this_node->
-
-       //if (node_index==3066)
-        //{
-            
-         //   PRINT_VECTOR(node_position);
-            //PRINT_VARIABLE(node_index);
-
-            //PRINT_VARIABLE(GetCellId());
-        //}
-
-
-        
-				
-				
         /*
          * The force on this Node is given by the gradient of the total free
          * energy of the CellPopulation, evaluated at the position of the vertex. This
@@ -141,6 +127,8 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
         // Find the indices of the elements owned by this node
         std::set<unsigned> containing_elem_indices = p_cell_population->GetNode(node_index)->rGetContainingElementIndices();
 
+
+			
         // Iterate over these elements
         for (std::set<unsigned>::iterator iter = containing_elem_indices.begin();
              iter != containing_elem_indices.end();
@@ -151,69 +139,67 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             unsigned elem_index = p_element->GetIndex();
             unsigned num_nodes_elem = p_element->GetNumNodes();
 
+
             // Find the local index of this node in this element
             unsigned local_index = p_element->GetNodeLocalIndex(node_index);
+            
 
             // Add the force contribution from this cell's area elasticity (note the minus sign)
             c_vector<double, DIM> element_area_gradient =
                     p_cell_population->rGetMesh().GetAreaGradientOfElementAtNode(p_element, local_index);
 
            
-           //if (target_areas[elem_index]>0)
-           //{
-           
-            
             area_elasticity_contribution -= GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-            
-           //}
-           //else
-           //{
-            //  area_elasticity_contribution -= 2*GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-          
-         //  }
-           
+
 
             // Get the previous and next nodes in this element
             unsigned previous_node_local_index = (num_nodes_elem+local_index-1)%num_nodes_elem;
             Node<DIM>* p_previous_node = p_element->GetNode(previous_node_local_index);
 
+
             unsigned next_node_local_index = (local_index+1)%num_nodes_elem;
             Node<DIM>* p_next_node = p_element->GetNode(next_node_local_index);
 
-            // Compute the line tension parameter for each of these edges - be aware that this is half of the actual
-            // value for internal edges since we are looping over each of the internal edges twice
-
-            
+           
             double previous_edge_line_tension_parameter = GetLineTensionParameter(p_previous_node, p_this_node, *p_cell_population);
             double next_edge_line_tension_parameter = GetLineTensionParameter(p_this_node, p_next_node, *p_cell_population);
-            
             
             // Compute the gradient of each these edges, computed at the present node
             c_vector<double, DIM> previous_edge_gradient =
                     -p_cell_population->rGetMesh().GetNextEdgeGradientOfElementAtNode(p_element, previous_node_local_index);
             c_vector<double, DIM> next_edge_gradient = p_cell_population->rGetMesh().GetNextEdgeGradientOfElementAtNode(p_element, local_index);
 
-            // Add the force contribution from cell-cell and cell-boundary line tension (note the minus sign)
-           
-            //if (target_areas[elem_index]>0)
-            //{
-                
-            
-                    line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
 
-            //}
-            //else
-            //{
-            //    line_tension_contribution -= 1*previous_edge_line_tension_parameter*previous_edge_gradient + 10*next_edge_line_tension_parameter*next_edge_gradient;
-            //}
+
+            // Add the force contribution from cell-cell and cell-boundary line tension (note the minus sign)
+            if (target_areas[elem_index]==0)
+            {
+
+            line_tension_contribution -= 1.0*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+            }
+            else
+            {
+            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+            //if (hb_neighbour == true && lec_neighbour == true)
+            {
+              //  MARK;
                 
+               // PRINT_VARIABLE(p_cell_population->GetCellUsingLocationIndex(elem_index)->GetCellId());
+
+                line_tension_contribution -= 20.0*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+
+            }
+            else
+            {
+                line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+            }
+            }  
 
 
             // Add the force contribution from this cell's perimeter contractility (note the minus sign)
             c_vector<double, DIM> element_perimeter_gradient;
             element_perimeter_gradient = previous_edge_gradient + next_edge_gradient;
 
-            
             perimeter_contractility_contribution -= GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
             
            
@@ -231,6 +217,8 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
     std::set<unsigned> elements_containing_nodeA = pNodeA->rGetContainingElementIndices();
     std::set<unsigned> elements_containing_nodeB = pNodeB->rGetContainingElementIndices();
 
+    
+
     // Find common elements
     std::set<unsigned> shared_elements;
     std::set_intersection(elements_containing_nodeA.begin(),
@@ -242,6 +230,8 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
     // Check that the nodes have a common edge
     assert(!shared_elements.empty());
 
+
+
     // Since each internal edge is visited twice in the loop above, we have to use half the line tension parameter
     // for each visit.
 
@@ -249,9 +239,37 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
     double line_tension_parameter_in_calculation = GetLineTensionParameter()/2.0;
 
     // If the edge corresponds to a single element, then the cell is on the boundary
-    if (shared_elements.size() == 1)
+   
+    
+   
+    bool hb_neighbour = false;
+	bool lec_neighbour = false;
+
+     for (std::set<unsigned>::iterator iterq = shared_elements.begin();
+             iterq != shared_elements.end();
+             ++iterq)
+             {
+                
+                if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
+				{
+					lec_neighbour = true;
+				}
+				else
+				{
+					hb_neighbour = true;
+				}
+             }
+
+            if (lec_neighbour == true && hb_neighbour==true)
     {
-        line_tension_parameter_in_calculation = GetBoundaryLineTensionParameter();
+        line_tension_parameter_in_calculation *= 1.0;
+        //MARK1
+        //PRINT_VARIABLE(rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->GetCellId());
+    }
+     if (shared_elements.size() == 1)
+    {
+        //line_tension_parameter_in_calculation = GetLineTensionParameter(); //ALT
+        line_tension_parameter_in_calculation *=2.0; // FIONA TESTS
     }
 
     return line_tension_parameter_in_calculation;

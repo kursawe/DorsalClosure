@@ -23,60 +23,38 @@ JulyTargetAreaModifier<DIM>::~JulyTargetAreaModifier()
 {
 }
 
-//template<unsigned DIM>
-//double MyTargetAreaModifier<DIM>::GetCurrentCellArea(AbstractCellPopulation<DIM>& rCellPopulation)
-//{
-//    VertexBasedCellPopulation<DIM>* p_cell_population = static_cast<VertexBasedCellPopulation<DIM>*>(&rCellPopulation);
-//    unsigned num_elements = p_cell_population->GetNumElements();
-//    std::vector<double> element_areas(num_elements);
-
-//    for (typename VertexMesh<DIM,DIM>::VertexElementIterator elem_iter = p_cell_population->rGetMesh().GetElementIteratorBegin();
-//         elem_iter != p_cell_population->rGetMesh().GetElementIteratorEnd();
-//         ++elem_iter)
-//    {
-//        unsigned elem_index = elem_iter->GetIndex();
-//        element_areas[elem_index] = p_cell_population->rGetMesh().GetVolumeOfElement(elem_index);
-//    }
-//    return element_areas
-//}
 
 template<unsigned DIM>
 void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
+
 {
     double cell_target_area;
     double lec_area = mLecArea;
 
+    if (pCell->IsDead())
+    {
+         PRINT_VARIABLE(pCell->GetCellId());
+         if (pCell->HasCellProperty<CellLabel>())
+            {
+                TRACE("LEC dead")
+            }
+        else
+            {
+            TRACE("Histoblast dead")
+            }
+    }
+   
     
-    
-    // if (pCell->GetCellId()==273)
-    // {
-    //     pCell->
-    // }
-
-
-
-	 //VertexBasedCellPopulation<SPACE_DIM>* p_CellPopulation = static_cast<VertexBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
-	 //VertexElement<SPACE_DIM, SPACE_DIM>* this_element = p_CellPopulation->GetElementCorrespondingToCell(*cell_iter);
-	 //unsigned number_nodes = this_element->GetNumNodes();
-	 //for (unsigned node_index=0; node_index < number_nodes; node_index++)
-	 //{
-	 //	PRINT_VECTOR(this_element->GetNode(node_index)->rGetLocation());
-
-//	 }
-
     // Get target area A of a healthy cell in S, G2 or M phase
     if (pCell->HasCellProperty<CellLabel>())
     {
         //lecs are labelled, and are given larger target area
-        
         cell_target_area = lec_area;
-       
     }
     else
     {
         //hbs given target area = 1
-        cell_target_area = 1*this->mReferenceTargetArea;  //ResultsNew=1
-        //cell_target_area *= 1.0;
+        cell_target_area = 1*this->mReferenceTargetArea; 
     }
     double growth_duration = mGrowthDuration;
     if (growth_duration == DOUBLE_UNSET)
@@ -98,8 +76,7 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         }
     }
     double apoptosis_duration = mApoptosisDuration;
-
-    if (pCell->HasCellProperty<ApoptoticCellProperty>())
+  if (pCell->HasCellProperty<ApoptoticCellProperty>())
     {
         //PRINT_2_VARIABLES(pCell->GetCellId(), pCell->GetStartOfApoptosisTime());
         // Age of cell when apoptosis begins is given by pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime()
@@ -118,7 +95,7 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
 
         //current time minus time when the cell became apoptotic 
         double time_spent_apoptotic = SimulationTime::Instance()->GetTime() - pCell->GetStartOfApoptosisTime();
-        cell_target_area *= 1.0 - (1.0*(time_spent_apoptotic/apoptosis_duration));
+        cell_target_area *= 1.0 - (0.5*(time_spent_apoptotic/apoptosis_duration));
         //area is a positive quantity 
 
         if (cell_target_area < 0)
@@ -131,12 +108,12 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
     else
     {
 
-        //if (pCell->HasCellProperty<CellLabel>())
-        //{
-        //    cell_target_area*=1;
-        //}
-        //else
-        //{
+        if (pCell->HasCellProperty<CellLabel>())
+        {
+            cell_target_area=lec_area;
+        }
+        else
+        {
 
 
         double cell_age = pCell->GetAge();
@@ -160,7 +137,7 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
                 cell_target_area = 0.5*this->mReferenceTargetArea;
             }
         }
-        //}
+        }
     }
 
     // Set cell data

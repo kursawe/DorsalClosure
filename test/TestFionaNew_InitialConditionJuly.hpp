@@ -36,7 +36,7 @@
 #include "DifferentiatedCellProliferativeType.hpp" //Chaste file for defining differentiated type
 #include "FionaFarhadifarForce.hpp" //Chaste file, A force class for use in Vertex-based simulations.
 #include "TransitCellProliferativeType.hpp" //Chaste file for defining proliferative types
-#include "FionaUniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
+#include "UniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
 #include "WildTypeCellMutationState.hpp" //Chaste file, Subclass of AbstractCellMutationState defining a 'wild type' mutation state.
 
 // Georgia specified files
@@ -63,7 +63,7 @@ public:
 	void TestFionaNewTest_InitialConditionJuly()
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
-		
+		//RandomNumberGenerator::Destroy();
         MeshGeneratorJuly generator(13,22,6,0,1.0); // GEORGIA FILE
 		
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh(); // Define as a mutable 2D vertex mesh
@@ -83,7 +83,7 @@ public:
 		for (unsigned cell_iter=0; cell_iter<p_mesh->GetNumElements(); ++cell_iter)
     	{
 			// Assign the cell cycle model to be a uniform G1 cell cycle
-			FionaUniformG1GenerationalCellCycleModel* p_model = new FionaUniformG1GenerationalCellCycleModel;
+			UniformG1GenerationalCellCycleModel* p_model = new UniformG1GenerationalCellCycleModel;
 
 			// Set the spatial dimension of each cell to be 2D
             p_model->SetDimension(2);
@@ -110,7 +110,7 @@ public:
 			// {
 			// 	p_model->SetMaxTransitGenerations(2);
 			// }
-			p_model->SetMaxTransitGenerations(2);
+			p_model->SetMaxTransitGenerations(1);
 
 
 
@@ -121,9 +121,11 @@ public:
 
 			// Birth time is the time that the cell was born (hours), can be negative if cell already alive befoore simulation
 			// Set birth time to be random number (0,1) mutiplied by stem cell life cycle hours. OTHER 3 phases approx 10 time units.
-            double birth_time = - RandomNumberGenerator::Instance()-> ranf() *
+            
+			
+			double birth_time = -(RandomNumberGenerator::Instance()-> ranf() *
                                (  p_model->GetTransitCellG1Duration()
-                                 + p_model->GetSG2MDuration() ); 
+                                 + p_model->GetSG2MDuration() )); 
 								 
 			// Update cell pointers
             CellPtr p_cell(new Cell(p_state, p_model));
@@ -164,21 +166,15 @@ public:
                 //cell_iter->SetCellProliferativeType(p_diff_type);
             
 			 // If outside the boundaries then kill the cells
-			  if (this_location(0) < -0.5 && (this_location(1) < 10.0 || this_location(1) > 142.0)) 
+			  if (this_location(0) < -0.2 && (this_location(1) < 10.0 || this_location(1) > 145.0)) 
 			  {
 			  	cell_iter->Kill();
 			  }
-			  else if (this_location(0) > 67.5 && (this_location(1) < 10.0 || this_location(1) > 142.0)) 
+			  else if (this_location(0) > 67.5 && (this_location(1) < 10.0 || this_location(1) > 145.0)) 
 			  {
 			  	cell_iter->Kill();
 			  }
 			  
-			  //if (this_location(0) > 67.0 && (this_location(1) > 142.0 && this_location(1) < 145.0)) 
-			  //{
-			  //	cell_iter->Kill();
-
-				
-			  //}
 
 
 			 
@@ -191,7 +187,7 @@ public:
         simulator.SetOutputDirectory("TestFionaNew_InitialConditionJuly");
         simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
 		simulator.SetDt(0.01);
-        simulator.SetEndTime(1000.0);//1000
+        simulator.SetEndTime(750.0);//1000
         
 
 		// Include Volume Tracker - allows us to visualise/plot cell volumes/areas in paraview
@@ -205,10 +201,9 @@ public:
 	   // Update the target area of cells (GEORGIA DEFINED)
         MAKE_PTR(JulyTargetAreaModifier<2>, p_growth_modifier);
         simulator.AddSimulationModifier(p_growth_modifier);
-
 		p_growth_modifier->SetReferenceTargetArea(1.0);
 
-	
+
 
 
 		//c_vector<double, 2> bias_vector;
@@ -219,10 +214,10 @@ public:
 
 	
 
-		// // Set c and y boundary points
-		double top_height = 150.2 ; 
+		// Set c and y boundary points
+		double top_height = 154.8 ; 
 		double bottom_height = 0.6; 
-		double right_bound = 67.16;//+1.3; 
+		double right_bound = 67.1; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
 
@@ -237,35 +232,28 @@ public:
 			std::set<unsigned> containing_element_indices = p_this_node->rGetContainingElementIndices();
 
 
-			// Move all of the boundary cell nodes to reduce height of boundary layers
-			if (node_position[1] > 143.0 && node_position[1] < 144.0)
+			if (node_position[1] > 144.0 && node_position[1] < 146.0)
 			{
-		 		node_position[1] += 1.0;//1
-		 	}
-			else if (node_position[1] > 7.0 && node_position[1] < 8.0)
-			{
-				node_position[1] -= 1.0;//1		
-		 	}
-
-			// Move bottom of bottom LECs down and Top of top Lecs up
-			if (node_position[1] > 141.0 && node_position[1] < 142.0)
-			{
-				node_position[1] += 2.5;//  2.5
+			 	node_position[1] += 2.50;//2.50;//2.00;
 			}
-			else if (node_position[1] > 8.5 && node_position[1] < 10.0)
+			else if (node_position[1] > 9.0 && node_position[1] < 11.0)
 		 	{
-		 	node_position[1] -= 2.5;// 2.5
+		 		node_position[1] -= 2.5;//2.50;//2.00;
 			}
-
-			// if (node_position[1] > 140.0 && node_position[1] < 141.5)
-			// {
-			// 	node_position[1] += 1.0;//  2.5
-			// }
-
-
-			
 			
 
+			if (node_position[1] > 146.0 && node_position[1] < 149.0)
+			{
+		 		node_position[1] += 1.0;//1.0;//1.0;
+		 	}
+			else if (node_position[1] > 7.0 && node_position[1] < 9.0)
+			{
+				node_position[1] -= 1.0;//1.0;//1.0;
+		 	}
+
+	
+
+		
 			
 			
 		}
@@ -299,12 +287,14 @@ public:
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[0] = right_bound + 0.001;
 			}
+
+			// if ( node_position[0] > right_bound-0.1 && node_position[1]<145.0 && node_position[1]>10.0 )//needed
+			// {
+			// 	p_this_node->SetAsBoundaryNode(true); 
+			// 	node_position[0] = right_bound + 0.001;
+			// }
 			
-			//if ( node_position[0] > right_bound-2.0 && node_position[1] > 10.0 && node_position[1] < 143.0) //needs to be 0.01
-			//{
-			//	p_this_node->SetAsBoundaryNode(true); 
-			//	node_position[0] = right_bound + 0.001;
-			//}
+			
 			
 		
 		}
@@ -365,10 +355,12 @@ public:
 		
 		// Update cell populations
 	    cell_population.RemoveDeadCells();
+
 		cell_population.Update();
 		
 	
         simulator.Solve();
+		
 
 		
 	

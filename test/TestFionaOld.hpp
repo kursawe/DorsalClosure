@@ -45,7 +45,7 @@
 #include "MyCellKiller.hpp" // Georgia File for defining cell death
 #include "PlaneStickyBoundaryCondition.hpp" // Georgia File that imposes boundary condition
 #include "FionaTargetAreaModifier.hpp" // Georgia file that updates target area modifier
-
+#include "CellAgesWriter.hpp"
 
 //Fiona added files
 #include "VolumeTrackingModifier.hpp"
@@ -94,7 +94,7 @@ public:
 
 			if (this_location(1) < 1.6 || this_location(1) > 105.6) 
 			{
-				p_model->SetMaxTransitGenerations(2);
+				p_model->SetMaxTransitGenerations(1);
 			}
 			else if (this_location(1) > 1.6 && this_location(1) < 3.2) 
 			{
@@ -106,8 +106,10 @@ public:
 			}
 			else
 			{
-				p_model->SetMaxTransitGenerations(0);
+				p_model->SetMaxTransitGenerations(1);
 			}
+
+			
 			
 
 
@@ -187,16 +189,19 @@ public:
 	   // Update the target area of cells (GEORGIA DEFINED)
         MAKE_PTR(FionaTargetAreaModifier<2>, p_growth_modifier);
         simulator.AddSimulationModifier(p_growth_modifier);
+		p_growth_modifier->SetReferenceTargetArea(1.0*0.488071); // To account for cell division, double actual area at start
 
 		// Include Volume Tracker - allows us to visualise/plot cell volumes/areas in paraview
 		MAKE_PTR(VolumeTrackingModifier<2>, p_modifier);
         simulator.AddSimulationModifier(p_modifier);
+		
 
 		//c_vector<double, 2> bias_vector;
         //bias_vector(0) = 0.0;
         //bias_vector(1) = 1.0;
 		//MAKE_PTR_ARGS(DivisionBiasTrackingModifier<2>, p_modifier2, (bias_vector));
         //simulator.AddSimulationModifier(p_modifier2);
+		
 
 	
 
@@ -367,7 +372,7 @@ public:
 		//cell_population.AddCellPopulationCountWriter<CellProliferativePhasesCountWriter>();
 		cell_population.AddCellWriter<FionaGenWriter>();
 		//cell_population.AddCellWriter<CellAncestorWriter>();
-		
+		cell_population.AddCellWriter<CellAgesWriter>();
 		
 		// Update cell populations
 	    cell_population.RemoveDeadCells();
