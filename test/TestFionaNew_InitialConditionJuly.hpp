@@ -47,7 +47,7 @@
 #include "PlaneStickyBoundaryCondition.hpp" // Georgia File that imposes boundary condition
 #include "JulyTargetAreaModifier.hpp" // Georgia file that updates target area modifier
 #include "CellIdWriter.hpp"
-
+#include "CellAgesWriter.hpp"
 //Fiona added files
 #include "VolumeTrackingModifier.hpp"
 //#include "FionaTrackGen.hpp"
@@ -64,10 +64,14 @@ public:
     {
         //Generate Mesh cells across, cells up, rows of histoblasts on the bottom, number of relaxation steps, target area
 		//RandomNumberGenerator::Destroy();
+		//RandomNumberGenerator::Instance();
+		
+
         MeshGeneratorJuly generator(13,22,6,0,1.0); // GEORGIA FILE
 		
         MutableVertexMesh<2,2>* p_mesh = generator.GetMesh(); // Define as a mutable 2D vertex mesh
-        
+		PRINT_VARIABLE(p_mesh->GetCellRearrangementThreshold());
+        //p_mesh->SetCellRearrangementThreshold(0.01);
 		//Create cells to populate the mesh
         std::vector<CellPtr> cells;
         
@@ -78,6 +82,12 @@ public:
 		MAKE_PTR(CellLabel, p_label); // LECs are labelled cells
 		
 		//MAKE_PTR(StemCellProliferativeType, p_stem_type);
+
+		//TEST for different initial ages
+		RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
+			
+		p_gen->Reseed(0); //Comment out if you want same cell ages to start with 
+			
 
 		// For each cell
 		for (unsigned cell_iter=0; cell_iter<p_mesh->GetNumElements(); ++cell_iter)
@@ -94,23 +104,23 @@ public:
 			c_vector<double, 2> this_location = p_mesh->GetCentroidOfElement(cell_iter);
 			//PRINT_VARIABLE(this_location);
 
-			// if (this_location(1) < 3.0 || this_location(1) > 147.0) 
-			// {
-			// 	p_model->SetMaxTransitGenerations(2);
-			// }
-			// else if (this_location(1) > 3.0 && this_location(1) < 6.0) 
-			// {
-			// 	p_model->SetMaxTransitGenerations(2);
-			// }
-			// else if (this_location(1) > 144.0 && this_location(1) < 147.0) 
-			// {
-			// 	p_model->SetMaxTransitGenerations(2);
-			// }
-			// else
-			// {
-			// 	p_model->SetMaxTransitGenerations(2);
-			// }
-			p_model->SetMaxTransitGenerations(1);
+			if (this_location(1) < 2.0 || this_location(1) > 153.0) 
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			else if (this_location(1) > 2.0 && this_location(1) < 4.0) 
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			else if (this_location(1) > 151.0 && this_location(1) < 153.0) 
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			else
+			{
+				p_model->SetMaxTransitGenerations(1);
+			}
+			//p_model->SetMaxTransitGenerations(1);//1 original
 
 
 
@@ -121,9 +131,14 @@ public:
 
 			// Birth time is the time that the cell was born (hours), can be negative if cell already alive befoore simulation
 			// Set birth time to be random number (0,1) mutiplied by stem cell life cycle hours. OTHER 3 phases approx 10 time units.
-            
+			//RandomNumberGenerator::Destroy();
+			//RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
 			
-			double birth_time = -(RandomNumberGenerator::Instance()-> ranf() *
+			//p_gen->Reseed(cell_iter); //Comment out if you want same cell ages to start with 
+			
+			//RandomNumberGenerator::Destroy();
+			//RandomNumberGenerator::Instance();
+			double birth_time = -(p_gen-> ranf() *
                                (  p_model->GetTransitCellG1Duration()
                                  + p_model->GetSG2MDuration() )); 
 								 
@@ -185,8 +200,8 @@ public:
 		
 		// Set timestep details for simulatinos
         simulator.SetOutputDirectory("TestFionaNew_InitialConditionJuly");
-        simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
-		simulator.SetDt(0.01);
+        simulator.SetSamplingTimestepMultiple(2*1000); // 100 means each data value plotted is order 1 time unit
+		simulator.SetDt(0.5*0.01);
         simulator.SetEndTime(750.0);//1000
         
 
@@ -234,21 +249,25 @@ public:
 
 			if (node_position[1] > 144.0 && node_position[1] < 146.0)
 			{
-			 	node_position[1] += 2.50;//2.50;//2.00;
+				//node_position[1] += 3.0;
+			 	node_position[1] += 2.5;//2.50;//2.00; //original
 			}
 			else if (node_position[1] > 9.0 && node_position[1] < 11.0)
 		 	{
-		 		node_position[1] -= 2.5;//2.50;//2.00;
+				//node_position[1] -= 3.0;
+		 		node_position[1] -= 2.5;//2.50;//2.00; //original
 			}
 			
 
 			if (node_position[1] > 146.0 && node_position[1] < 149.0)
 			{
-		 		node_position[1] += 1.0;//1.0;//1.0;
+				//node_position[1] += 0;
+		 		node_position[1] += 1.0;//1.0;//1.0;//original
 		 	}
 			else if (node_position[1] > 7.0 && node_position[1] < 9.0)
 			{
-				node_position[1] -= 1.0;//1.0;//1.0;
+				//node_position[1] -= 0;
+				node_position[1] -= 1.0;//1.0;//1.0; //original
 		 	}
 
 	
@@ -351,6 +370,7 @@ public:
 		//cell_population.AddCellPopulationCountWriter<CellProliferativePhasesCountWriter>();
 		cell_population.AddCellWriter<FionaGenWriter>();
 		cell_population.AddCellWriter<CellIdWriter>();
+		cell_population.AddCellWriter<CellAgesWriter>();
 		
 		
 		// Update cell populations

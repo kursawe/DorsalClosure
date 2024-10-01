@@ -164,7 +164,8 @@ std::vector<c_vector<double, 2> > MeshGeneratorJuly::GetInitialPointLocations()
 
     unsigned point_idx = 0;
     //edge length denotes length of side of regular hexagon 
-    double node_adjustment=0.2;
+    double node_adjustment=0.2;//update
+    //double node_adjustment=0.2;//original
 
 
      // start calculating seed positions
