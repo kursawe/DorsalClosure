@@ -36,6 +36,7 @@
 #include "DifferentiatedCellProliferativeType.hpp" //Chaste file for defining differentiated type
 #include "FionaFarhadifarForce.hpp" //Chaste file, A force class for use in Vertex-based simulations.
 #include "TransitCellProliferativeType.hpp" //Chaste file for defining proliferative types
+#include "StemCellProliferativeType.hpp" //Chaste file for defining proliferative types
 #include "UniformG1GenerationalCellCycleModel.hpp" //Chaste file that defines cell cycle model
 #include "WildTypeCellMutationState.hpp" //Chaste file, Subclass of AbstractCellMutationState defining a 'wild type' mutation state.
 
@@ -80,13 +81,13 @@ public:
         MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type); // Differentiated cells do not divide
 		MAKE_PTR(TransitCellProliferativeType, p_transit_type); // Transit cells can divide
 		MAKE_PTR(CellLabel, p_label); // LECs are labelled cells
+		MAKE_PTR(StemCellProliferativeType, p_stem_type);
 		
-		//MAKE_PTR(StemCellProliferativeType, p_stem_type);
 
 		//TEST for different initial ages
 		RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
 			
-		p_gen->Reseed(0); //Comment out if you want same cell ages to start with 
+		p_gen->Reseed(8); //Comment out if you want same cell ages to start with 
 			
 
 		// For each cell
@@ -96,29 +97,41 @@ public:
 			UniformG1GenerationalCellCycleModel* p_model = new UniformG1GenerationalCellCycleModel;
 
 			// Set the spatial dimension of each cell to be 2D
-            p_model->SetDimension(2);
+            p_model->SetDimension(3);
 
 			// Set length of time that histoblast transit cells remains in G1
-            p_model->SetTransitCellG1Duration(80);// This should be approx 8 times more than other 3 phases
+           // p_model->SetTransitCellG1Duration(80);// This should be approx 8 times more than other 3 phases
+
+			//p_model->SetStemCellG1Duration(80);
+            p_model->SetTransitCellG1Duration(80*1);
+            //p_model->SetMaxTransitGenerations(3);
 
 			c_vector<double, 2> this_location = p_mesh->GetCentroidOfElement(cell_iter);
 			//PRINT_VARIABLE(this_location);
 
-			if (this_location(1) < 2.0 || this_location(1) > 153.0) 
+			if (this_location(1) < 1.0 || this_location(1) > 154.5) 
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(4); //Layer 1
 			}
-			else if (this_location(1) > 2.0 && this_location(1) < 4.0) 
+			else if ((this_location(1) > 1.0 && this_location(1) < 2.0) || (this_location(1) > 153.5 && this_location(1) < 154.5)) 
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(4); //Layer 2
 			}
-			else if (this_location(1) > 151.0 && this_location(1) < 153.0) 
+			else if ((this_location(1) > 2.0 && this_location(1) < 3.0) || (this_location(1) > 152.5 && this_location(1) < 153.5)) 
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(1); //Layer 3
+			}
+			else if ((this_location(1) > 3.0 && this_location(1) < 4.0) || (this_location(1) > 151.5 && this_location(1) < 152.5)) 
+			{
+				p_model->SetMaxTransitGenerations(1); //Layer 4
+			}
+			else if ((this_location(1) > 4.0 && this_location(1) < 5.0) || (this_location(1) > 150.5 && this_location(1) < 151.5)) 
+			{
+				p_model->SetMaxTransitGenerations(1); //Layer 5
 			}
 			else
 			{
-				p_model->SetMaxTransitGenerations(1);
+				p_model->SetMaxTransitGenerations(1); //Layer 6
 			}
 			//p_model->SetMaxTransitGenerations(1);//1 original
 
@@ -175,6 +188,7 @@ public:
 			else
 			{
 				cell_iter->SetCellProliferativeType(p_transit_type);
+				//cell_iter->SetCellProliferativeType(p_stem_type);
 				
 			}
 
@@ -199,10 +213,10 @@ public:
         OffLatticeSimulation<2> simulator(cell_population);
 		
 		// Set timestep details for simulatinos
-        simulator.SetOutputDirectory("TestFionaNew_InitialConditionJuly");
-        simulator.SetSamplingTimestepMultiple(2*1000); // 100 means each data value plotted is order 1 time unit
-		simulator.SetDt(0.5*0.01);
-        simulator.SetEndTime(750.0);//1000
+        simulator.SetOutputDirectory("NovemberTests");
+        simulator.SetSamplingTimestepMultiple(1000); // 100 means each data value plotted is order 1 time unit
+		simulator.SetDt(0.01);
+        simulator.SetEndTime(1000.0);//1000
         
 
 		// Include Volume Tracker - allows us to visualise/plot cell volumes/areas in paraview
@@ -219,19 +233,9 @@ public:
 		p_growth_modifier->SetReferenceTargetArea(1.0);
 
 
-
-
-		//c_vector<double, 2> bias_vector;
-        //bias_vector(0) = 0.0;
-        //bias_vector(1) = 1.0;
-		//MAKE_PTR_ARGS(DivisionBiasTrackingModifier<2>, p_modifier2, (bias_vector));
-        //simulator.AddSimulationModifier(p_modifier2);
-
-	
-
 		// Set c and y boundary points
-		double top_height = 154.8 ; 
-		double bottom_height = 0.6; 
+		double top_height = 154.8 +0.3 ; 
+		double bottom_height = 0.6-0.3; 
 		double right_bound = 67.1; 
 		double left_bound = 0.0;
 		unsigned num_nodes = cell_population.GetNumNodes();
@@ -249,25 +253,25 @@ public:
 
 			if (node_position[1] > 144.0 && node_position[1] < 146.0)
 			{
-				//node_position[1] += 3.0;
-			 	node_position[1] += 2.5;//2.50;//2.00; //original
+				//node_position[1] += 3.0; // ALT CONFIG
+			 	node_position[1] += 2.5;//original
 			}
 			else if (node_position[1] > 9.0 && node_position[1] < 11.0)
 		 	{
-				//node_position[1] -= 3.0;
-		 		node_position[1] -= 2.5;//2.50;//2.00; //original
+				//node_position[1] -= 3.0; //ALT CONFIG
+		 		node_position[1] -= 2.5;//original
 			}
 			
 
 			if (node_position[1] > 146.0 && node_position[1] < 149.0)
 			{
-				//node_position[1] += 0;
-		 		node_position[1] += 1.0;//1.0;//1.0;//original
+				//node_position[1] += 0; //ALT CONFIG
+		 		node_position[1] += 1.0;//original
 		 	}
 			else if (node_position[1] > 7.0 && node_position[1] < 9.0)
 			{
-				//node_position[1] -= 0;
-				node_position[1] -= 1.0;//1.0;//1.0; //original
+				//node_position[1] -= 0; // ALT COnfig
+				node_position[1] -= 1.0;//original
 		 	}
 
 	
@@ -285,12 +289,12 @@ public:
 		{
 			Node<2>* p_this_node = cell_population.GetNode(node_index);
 			c_vector<double, 2>& node_position = p_this_node->rGetModifiableLocation();
-			if ( node_position[1] > top_height-0.001)
+			if ( node_position[1] > top_height-0.01)
 			{
 				p_this_node->SetAsBoundaryNode(true); 
 				node_position[1] = top_height + 0.001;
 			}
-			if ( node_position[1] < bottom_height+0.001 )// no difference if set as 0.4
+			if ( node_position[1] < bottom_height+0.01 )// no difference if set as 0.4
 			{ 
 				p_this_node->SetAsBoundaryNode(true);
 			  node_position[1] = bottom_height - 0.001;

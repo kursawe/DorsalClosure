@@ -14,7 +14,7 @@ JulyTargetAreaModifier<DIM>::JulyTargetAreaModifier()
     : AbstractTargetAreaModifier<DIM>(),
       mGrowthDuration(DOUBLE_UNSET),
       mApoptosisDuration(20.0), //20
-      mLecArea(75.0)      //  
+      mLecArea(75.0)      //  This is correct for actual area of LECs at start
 {
 }
 
@@ -87,11 +87,7 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
             //MARK;
             cell_target_area *= 0.5*(1 + (pCell->GetStartOfApoptosisTime() - pCell->GetBirthTime())/growth_duration);
 
-      
-
         }
-
-        
 
         //current time minus time when the cell became apoptotic 
         double time_spent_apoptotic = SimulationTime::Instance()->GetTime() - pCell->GetStartOfApoptosisTime();
@@ -115,8 +111,7 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         else
         {
 
-
-        double cell_age = pCell->GetAge();
+            double cell_age = pCell->GetAge();
 
         // The target area of a proliferating cell increases linearly from A/2 to A over the course of the prescribed duration
         if (cell_age < growth_duration)
@@ -125,6 +120,8 @@ void JulyTargetAreaModifier<DIM>::UpdateTargetAreaOfCell(CellPtr pCell)
         }
         else
         {
+
+            cell_target_area = this->mReferenceTargetArea;
             /**
              * At division, daughter cells inherit the cell data array from the mother cell.
              * Here, we assign the target area that we want daughter cells to have to cells

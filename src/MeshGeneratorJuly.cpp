@@ -44,11 +44,13 @@ void MeshGeneratorJuly::ValidateInputAndSetMembers()
     // Scaled length of long edge of a LEC compared to short edge
     lec_scaled_height = 3.0;  //CHECKED
 
-    // Total number of LECs requested
+    // Total number of LECs requested (130)
     double mNumLecs = (mNumElementsY-2*mNumHbRows)*mNumElementsX;  //CHECKED
+    PRINT_VARIABLE(mNumLecs);
 
-    // Total number of HBs requested, Bottom and top boundary rows of hbs = 104 cells each
+    // Total number of HBs requested (858 then 26 killed to implement boundary conditions for total 832)
     double mNumHbs = ((2*(mNumHbRows-1))*lec_scale_hb_width*mNumElementsX)+208;  //CHECKED
+    PRINT_VARIABLE(mNumHbs);
 
     // Total number of cells requested
     mTotalNumElements = mNumLecs+mNumHbs;  ///CHECKED

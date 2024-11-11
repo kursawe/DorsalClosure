@@ -149,8 +149,14 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
                     p_cell_population->rGetMesh().GetAreaGradientOfElementAtNode(p_element, local_index);
 
            
-            area_elasticity_contribution -= GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-
+            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+            {
+                area_elasticity_contribution -= 1*(GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient);
+            }
+            else
+            {
+                area_elasticity_contribution -= 1*(GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient);
+            }
 
             // Get the previous and next nodes in this element
             unsigned previous_node_local_index = (num_nodes_elem+local_index-1)%num_nodes_elem;
@@ -173,29 +179,23 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
 
             // Add the force contribution from cell-cell and cell-boundary line tension (note the minus sign)
             
-           // if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-            //if (hb_neighbour == true && lec_neighbour == true)
-           // {
-              //  MARK;
-                
-               // PRINT_VARIABLE(p_cell_population->GetCellUsingLocationIndex(elem_index)->GetCellId());
-
+           if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+           {
                 line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
 
-             //   if (target_areas[elem_index]>0)
-             //   {
-              //      line_tension_contribution*=1.0;
-               // }
-                //else
-               // {
-               //     line_tension_contribution*=1.0;
-                //}
-            
-           // }
-            //else
-            //{
-             //   line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
-            //}
+                if (target_areas[elem_index]>0)
+                {
+                    line_tension_contribution*=1.0;
+                }
+                else
+                {
+                    line_tension_contribution*=1.0;// Extrusion force
+                }
+            }
+            else
+            {
+                line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+            }
             
 
 
@@ -203,8 +203,23 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             c_vector<double, DIM> element_perimeter_gradient;
             element_perimeter_gradient = previous_edge_gradient + next_edge_gradient;
 
-            perimeter_contractility_contribution -= GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
+            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+            {
+                perimeter_contractility_contribution -= 5*GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
             
+                if (target_areas[elem_index]>0)
+                {
+                     perimeter_contractility_contribution*=1.0;
+                }
+                else
+                {
+                     perimeter_contractility_contribution*=1.0;// PerExtrusion force
+                }
+            }
+            else
+            {
+                perimeter_contractility_contribution -= 5*GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
+            }
            
         }
 
@@ -245,34 +260,52 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
    
     
    
-    // bool hb_neighbour = false;
-	// bool lec_neighbour = false;
+    bool hb_neighbour = false;
+	bool lec_neighbour = false;
 
-    //  for (std::set<unsigned>::iterator iterq = shared_elements.begin();
-    //          iterq != shared_elements.end();
-    //          ++iterq)
-    //          {
+     for (std::set<unsigned>::iterator iterq = shared_elements.begin();
+             iterq != shared_elements.end();
+             ++iterq)
+             {
                 
-    //             if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
-	// 			{
-	// 				lec_neighbour = true;
-	// 			}
-	// 			else
-	// 			{
-	// 				hb_neighbour = true;
-	// 			}
-    //          }
+                if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
+				{
+					lec_neighbour = true;
+				}
+				else
+				{
+					hb_neighbour = true;
+				}
+             }
 
-    //         if (lec_neighbour == true && hb_neighbour==true)
-    // {
-    //     line_tension_parameter_in_calculation *= 1.0;
-    //     //MARK1
-    //     //PRINT_VARIABLE(rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->GetCellId());
-    // }
+            if (lec_neighbour == true && hb_neighbour==true)
+    {
+        line_tension_parameter_in_calculation *= 1; //default 1 
+        //MARK1
+        //PRINT_VARIABLE(rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->GetCellId());
+    }
      if (shared_elements.size() == 1)
     {
+
+        for (std::set<unsigned>::iterator iterq = shared_elements.begin();
+             iterq != shared_elements.end();
+             ++iterq)
+             {
+                
+                if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
+				{
+					line_tension_parameter_in_calculation *=2; // default 2
+
+				}
+				else
+				{
+					line_tension_parameter_in_calculation *=2; // default 2
+
+				}
+             }
         //line_tension_parameter_in_calculation = GetLineTensionParameter(); //ALT
-        line_tension_parameter_in_calculation *=2; // FIONA TESTS
+        
+        
     }
 
     return line_tension_parameter_in_calculation;

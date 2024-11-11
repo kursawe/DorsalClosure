@@ -76,7 +76,7 @@ public:
         MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type); // Differentiated cells do not divide
 		MAKE_PTR(TransitCellProliferativeType, p_transit_type); // Transit cells can divide
 		MAKE_PTR(CellLabel, p_label); // LECs are labelled cells
-		
+		//MAKE_PTR(StemCellProliferativeType, p_stem_type);
 
 		// For each cell
 		for (unsigned cell_iter=0; cell_iter<p_mesh->GetNumElements(); ++cell_iter)
