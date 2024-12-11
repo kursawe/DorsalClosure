@@ -33,29 +33,39 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef FIONAGENWRITER_HPP_
-#define FIONAGENWRITER_HPP_
+#ifndef LECLABEL_HPP_
+#define LECLABEL_HPP_
 
-
+#include <boost/shared_ptr.hpp>
+#include "AbstractCellProperty.hpp"
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
-#include "AbstractCellWriter.hpp"
 
 /**
- * A class written using the visitor pattern for writing cell proliferative phases to file.
+ * Cell label class.
  *
- * The output file is called results.vizcellphases by default. If VTK is switched on,
- * then the writer also specifies the VTK output for each cell, which is stored in
- * the VTK cell data "Cycle phases" by default.
+ * Each Cell owns a CellPropertyCollection, which may include a shared pointer
+ * to an object of this type. When a Cell that is labelled divides, the daughter
+ * cells are both labelled.
+ *
+ * The CellLabel object keeps track of the number of cells that have the label, as well
+ * as what colour should be used by the visualizer to display cells with the label.
  */
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-class FionaGenWriter : public AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>
+class LecLabel : public AbstractCellProperty
 {
+protected:
+
+    /**
+     * Colour for use by visualizer.
+     */
+    unsigned mColour;
+
 private:
+
     /** Needed for serialization. */
     friend class boost::serialization::access;
     /**
-     * Serialize the object and its member variables.
+     * Archive the member variables.
      *
      * @param archive the archive
      * @param version the current version of this class
@@ -63,49 +73,32 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractCellWriter<ELEMENT_DIM, SPACE_DIM> >(*this);
+        archive & boost::serialization::base_object<AbstractCellProperty>(*this);
+        archive & mColour;
     }
 
 public:
 
     /**
-     * Default constructor.
+     * Constructor.
+     *
+     * @param colour  what colour cells with this label should be in the visualizer (defaults to 5)
      */
-    FionaGenWriter();
+    LecLabel(unsigned colour=100);
 
     /**
-     * Overridden GetCellDataForVtkOutput() method.
-     *
-     * Get a double associated with a cell. This method reduces duplication
-     * of code between the methods VisitCell() and AddVtkData().
-     *
-     * @param pCell a cell
-     * @param pCellPopulation a pointer to the cell population owning the cell
-     *
-     * @return data associated with the cell
+     * Destructor.
      */
-    double GetCellDataForVtkOutput(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation);
+    virtual ~LecLabel();
 
     /**
-     * Overridden VisitCell() method.
-     *
-     * Visit a cell and write its proliferative phase
-     * (its current phase in the cell cycle). These
-     * are defined in CellCyclePhases.hpp
-     *
-     * Outputs a line of space-separated values of the form:
-     * ...[cell proliferative phase] ...
-     *
-     * This is appended to the output written by AbstractCellBasedWriter, which is a single
-     * value [present simulation time], followed by a tab.
-     *
-     * @param pCell a cell
-     * @param pCellPopulation a pointer to the cell population owning the cell
+     * @return #mColour.
      */
-    virtual void VisitCell(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation);
+    unsigned GetColour() const;
 };
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_ALL_DIMS(FionaGenWriter)
+// Declare identifier for the serializer
+CHASTE_CLASS_EXPORT(LecLabel)
 
-#endif /* FIONAGENWRITER_HPP_ */
+#endif /* LECLABEL_HPP_ */

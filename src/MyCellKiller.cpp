@@ -34,7 +34,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 //the only change made (from randomcellkiller) is that only cells given a celllabel are labelled for apoptosis
 #include "MyCellKiller.hpp"
-#include "CellLabel.hpp"
+#include "LecLabel.hpp"
+#include "EarlyDeathLabel.hpp"
 #include "CellPropertyRegistry.hpp"
 #include "Debug.hpp"
 #include "ApoptoticCellProperty.hpp"
@@ -75,6 +76,7 @@ void MyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr pCell)
      * p = 1 - (1-q)^dt.
      */
     double death_prob_this_timestep = 1.0 - pow((1.0 - mProbabilityOfDeathInAnHour), SimulationTime::Instance()->GetTimeStep());
+    //double death_prob_this_timestep=mProbabilityOfDeathInAnHour;
     if (!pCell->HasApoptosisBegun() &&
         RandomNumberGenerator::Instance()->ranf() < death_prob_this_timestep)
     {
@@ -82,6 +84,12 @@ void MyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr pCell)
         //pCell->SetApoptosisTime(10000);
         // Mark the cell as apoptotic and store removal information if required.
         this->mpCellPopulation->StartApoptosisOnCell(pCell, "MyCellKiller");
+
+        boost::shared_ptr<AbstractCellProperty> ed_label =
+        pCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<EarlyDeathLabel>();
+        pCell->AddCellProperty(ed_label);
+
+      
 
     }
 }
@@ -94,7 +102,7 @@ void MyCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
          ++cell_iter)
     {
         //lecs are labelled, hbs are not. so here only the labelled lecs are able to die 
-        if (cell_iter->template HasCellProperty<CellLabel>())
+        if (cell_iter->template HasCellProperty<LecLabel>())
         {
             //MARK;
             CheckAndLabelSingleCellForApoptosis(*cell_iter);

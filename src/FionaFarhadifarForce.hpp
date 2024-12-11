@@ -75,6 +75,9 @@ private:
         archive & mLineTensionParameter;
         archive & mBoundaryLineTensionParameter;
         archive & mTargetAreaParameter;
+        archive & mExtrusionLineTensionParameter;
+        archive & mExtrusionPerimeterParameter;
+        archive & mExtrusionAreaParameter;
     }
 
 protected:
@@ -107,6 +110,21 @@ protected:
      * in each Cell in the force calculation instead of this parameter value.
      */
     double mTargetAreaParameter;
+
+    /**
+     * The extra line tension exerted by LECs once they reach target area 0.
+     */
+    double mExtrusionLineTensionParameter;
+
+     /**
+     * The extra contractility exerted by LECs once they reach target area 0.
+     */
+    double mExtrusionPerimeterParameter;
+
+    /**
+     * The extra elasticity exerted by LECs once they reach target area 0.
+     */
+    double mExtrusionAreaParameter;
 
 public:
 
@@ -167,6 +185,23 @@ public:
     double GetTargetAreaParameter();
 
     /**
+     * @return mExtrusionLineTensionParameter
+     */
+    double GetExtrusionLineTensionParameter();
+
+    /**
+     * @return mExtrusionPerimeterParameter
+     */
+    double GetExtrusionPerimeterParameter();
+
+
+      /**
+     * @return mExtrusionAreaParameter
+     */
+    double GetExtrusionAreaParameter();
+
+
+    /**
      * Set mAreaElasticityParameter.
      *
      * @param areaElasticityParameter the new value of mAreaElasticityParameter
@@ -200,6 +235,31 @@ public:
      * @param targetAreaParameter the new value of mTargetAreaParameter
      */
     void SetTargetAreaParameter(double targetAreaParameter);
+
+    /**
+     * Set mExtrusionLineTensionParameter.
+     *
+     * @param ExtrusionLineTensionParameter the new value of mTargetAreaParameter
+     */
+    void SetExtrusionLineTensionParameter(double ExtrusionLineTensionParameter);
+
+    /**
+     * Set mExtrusionPerimeterParameter.
+     *
+     * @param ExtrusionPerimeterParameter the new value of mTargetAreaParameter
+     */
+    void SetExtrusionPerimeterParameter(double ExtrusionPerimeterParameter);
+
+/**
+     * Set mExtrusionAreaParameter.
+     *
+     * @param ExtrusionAreaParameter the new value of mTargetAreaParameter
+     */
+    void SetExtrusionAreaParameter(double ExtrusionAreaParameter);
+
+
+
+    
 
     /**
      * Overridden OutputForceParameters() method.

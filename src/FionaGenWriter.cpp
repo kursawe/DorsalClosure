@@ -38,7 +38,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractSimpleGenerationalCellCycleModel.hpp" 
 #include "UniformG1GenerationalCellCycleModel.hpp"
 #include "Debug.hpp"
-#include "CellLabel.hpp"
+#include "LecLabel.hpp"
+#include "EarlyDeathLabel.hpp"
 #include "CellPropertyRegistry.hpp"
 #include "AbstractPhaseBasedCellCycleModel.hpp"
 #include "ApoptoticCellProperty.hpp"
@@ -62,9 +63,15 @@ double FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(CellPtr p
 
   double gen;
 
-  if (pCell->HasCellProperty<CellLabel>())
+  if (pCell->HasCellProperty<LecLabel>())
     {
       gen = 100.0;
+      if (pCell->HasCellProperty<EarlyDeathLabel>())
+      {
+        gen = 150.0;
+      }
+
+
     }
     else
 		{
@@ -81,10 +88,15 @@ void FionaGenWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, AbstractCe
     double gen = static_cast<UniformG1GenerationalCellCycleModel*>(pCell->GetCellCycleModel())->GetGeneration();
     double colour;
 
-    if (pCell->HasCellProperty<CellLabel>())
+    if (pCell->HasCellProperty<LecLabel>())
     {
       //MARK;
       colour = 100.0;
+
+      if (pCell->HasCellProperty<EarlyDeathLabel>())
+      {
+        colour = 150.0;
+      }
     }
     else
 		{

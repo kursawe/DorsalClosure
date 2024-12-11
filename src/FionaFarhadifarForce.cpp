@@ -35,16 +35,20 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FionaFarhadifarForce.hpp"
 #include "Debug.hpp"
-#include "CellLabel.hpp"
+#include "LecLabel.hpp"
+#include "EarlyDeathLabel.hpp"
 
 template<unsigned DIM>
 FionaFarhadifarForce<DIM>::FionaFarhadifarForce()
    : AbstractForce<DIM>(),
-     mAreaElasticityParameter(1.0), // These parameters are Case I in Farhadifar's paper
-     mPerimeterContractilityParameter(0.04),//0.04
-     mLineTensionParameter(1*0.12),
-     mBoundaryLineTensionParameter(1*0.12), // This parameter as such does not exist in Farhadifar's model 0.12
+     //mAreaElasticityParameter(1.0), // These parameters are Case I in Farhadifar's paper
+     //mPerimeterContractilityParameter(0.04),//0.04
+     //mLineTensionParameter(0.12),
+     //mBoundaryLineTensionParameter(0.12), // This parameter as such does not exist in Farhadifar's model 0.12
      mTargetAreaParameter(1.0)
+     //mExtrusionLineTensionParameter(1.0),
+     //mExtrusionPerimeterParameter(1.0),
+     //mExtrusionAreaParameter(1.0)
 {
 }
 
@@ -86,8 +90,6 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
     {
         unsigned elem_index = elem_iter->GetIndex();
         element_areas[elem_index] = p_cell_population->rGetMesh().GetVolumeOfElement(elem_index);
-        
-
         element_perimeters[elem_index] = p_cell_population->rGetMesh().GetSurfaceAreaOfElement(elem_index);
 
         if (using_target_area_modifier)
@@ -97,13 +99,8 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
         else
         {
             target_areas[elem_index] = mTargetAreaParameter;
-
-
         }
-
     }
-
-
     // Iterate over vertices in the cell population
     for (unsigned node_index=0; node_index<num_nodes; node_index++)
     {
@@ -127,8 +124,6 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
         // Find the indices of the elements owned by this node
         std::set<unsigned> containing_elem_indices = p_cell_population->GetNode(node_index)->rGetContainingElementIndices();
 
-
-			
         // Iterate over these elements
         for (std::set<unsigned>::iterator iter = containing_elem_indices.begin();
              iter != containing_elem_indices.end();
@@ -139,34 +134,30 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             unsigned elem_index = p_element->GetIndex();
             unsigned num_nodes_elem = p_element->GetNumNodes();
 
-
             // Find the local index of this node in this element
             unsigned local_index = p_element->GetNodeLocalIndex(node_index);
             
-
             // Add the force contribution from this cell's area elasticity (note the minus sign)
-            c_vector<double, DIM> element_area_gradient =
-                    p_cell_population->rGetMesh().GetAreaGradientOfElementAtNode(p_element, local_index);
-
-           
-            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+            c_vector<double, DIM> element_area_gradient = p_cell_population->rGetMesh().GetAreaGradientOfElementAtNode(p_element, local_index);
+            
+            area_elasticity_contribution -= 1*(GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient);
+            
+            if (target_areas[elem_index]>0)
             {
-                area_elasticity_contribution -= 1*(GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient);
+                area_elasticity_contribution*=1;
             }
             else
             {
-                area_elasticity_contribution -= 1*(GetAreaElasticityParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient);
+                area_elasticity_contribution*=mExtrusionAreaParameter;
             }
 
             // Get the previous and next nodes in this element
             unsigned previous_node_local_index = (num_nodes_elem+local_index-1)%num_nodes_elem;
             Node<DIM>* p_previous_node = p_element->GetNode(previous_node_local_index);
 
-
             unsigned next_node_local_index = (local_index+1)%num_nodes_elem;
             Node<DIM>* p_next_node = p_element->GetNode(next_node_local_index);
 
-           
             double previous_edge_line_tension_parameter = GetLineTensionParameter(p_previous_node, p_this_node, *p_cell_population);
             double next_edge_line_tension_parameter = GetLineTensionParameter(p_this_node, p_next_node, *p_cell_population);
             
@@ -175,26 +166,25 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
                     -p_cell_population->rGetMesh().GetNextEdgeGradientOfElementAtNode(p_element, previous_node_local_index);
             c_vector<double, DIM> next_edge_gradient = p_cell_population->rGetMesh().GetNextEdgeGradientOfElementAtNode(p_element, local_index);
 
-
-
             // Add the force contribution from cell-cell and cell-boundary line tension (note the minus sign)
-            
-           if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
+           if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<LecLabel>())
            {
-                line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+                line_tension_contribution -= (previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
 
                 if (target_areas[elem_index]>0)
                 {
-                    line_tension_contribution*=1.0;
+                    line_tension_contribution*=1;
                 }
                 else
                 {
-                    line_tension_contribution*=1.0;// Extrusion force
+                    line_tension_contribution*=mExtrusionLineTensionParameter;
+                    //p_cell_population->GetCellUsingLocationIndex(elem_index)->p_cell->IsDead()
                 }
+               
             }
             else
             {
-                line_tension_contribution -= 1*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+                line_tension_contribution -= (previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
             }
             
 
@@ -202,24 +192,20 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             // Add the force contribution from this cell's perimeter contractility (note the minus sign)
             c_vector<double, DIM> element_perimeter_gradient;
             element_perimeter_gradient = previous_edge_gradient + next_edge_gradient;
-
-            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<CellLabel>())
-            {
-                perimeter_contractility_contribution -= 5*GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
             
-                if (target_areas[elem_index]>0)
-                {
-                     perimeter_contractility_contribution*=1.0;
-                }
-                else
-                {
-                     perimeter_contractility_contribution*=1.0;// PerExtrusion force
-                }
+            perimeter_contractility_contribution -= GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
+            
+            if (target_areas[elem_index]>0)
+            {
+                perimeter_contractility_contribution*=1;
             }
             else
             {
-                perimeter_contractility_contribution -= 5*GetPerimeterContractilityParameter()* element_perimeters[elem_index]*element_perimeter_gradient;
+                perimeter_contractility_contribution*=mExtrusionPerimeterParameter;
+
+                
             }
+            
            
         }
 
@@ -235,8 +221,6 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
     std::set<unsigned> elements_containing_nodeA = pNodeA->rGetContainingElementIndices();
     std::set<unsigned> elements_containing_nodeB = pNodeB->rGetContainingElementIndices();
 
-    
-
     // Find common elements
     std::set<unsigned> shared_elements;
     std::set_intersection(elements_containing_nodeA.begin(),
@@ -248,42 +232,11 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
     // Check that the nodes have a common edge
     assert(!shared_elements.empty());
 
-
-
     // Since each internal edge is visited twice in the loop above, we have to use half the line tension parameter
     // for each visit.
-
-    
     double line_tension_parameter_in_calculation = GetLineTensionParameter()/2.0;
 
     // If the edge corresponds to a single element, then the cell is on the boundary
-   
-    
-   
-    bool hb_neighbour = false;
-	bool lec_neighbour = false;
-
-     for (std::set<unsigned>::iterator iterq = shared_elements.begin();
-             iterq != shared_elements.end();
-             ++iterq)
-             {
-                
-                if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
-				{
-					lec_neighbour = true;
-				}
-				else
-				{
-					hb_neighbour = true;
-				}
-             }
-
-            if (lec_neighbour == true && hb_neighbour==true)
-    {
-        line_tension_parameter_in_calculation *= 1; //default 1 
-        //MARK1
-        //PRINT_VARIABLE(rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->GetCellId());
-    }
      if (shared_elements.size() == 1)
     {
 
@@ -291,22 +244,10 @@ double FionaFarhadifarForce<DIM>::GetLineTensionParameter(Node<DIM>* pNodeA, Nod
              iterq != shared_elements.end();
              ++iterq)
              {
-                
-                if (rVertexCellPopulation.GetCellUsingLocationIndex(*iterq)->template HasCellProperty<CellLabel>())
-				{
-					line_tension_parameter_in_calculation *=2; // default 2
-
-				}
-				else
-				{
-					line_tension_parameter_in_calculation *=2; // default 2
-
-				}
+                line_tension_parameter_in_calculation=GetLineTensionParameter(); // default 2
              }
-        //line_tension_parameter_in_calculation = GetLineTensionParameter(); //ALT
-        
-        
     }
+        
 
     return line_tension_parameter_in_calculation;
 }
@@ -342,6 +283,24 @@ double FionaFarhadifarForce<DIM>::GetTargetAreaParameter()
 }
 
 template<unsigned DIM>
+double FionaFarhadifarForce<DIM>::GetExtrusionLineTensionParameter()
+{
+    return mExtrusionLineTensionParameter;
+}
+
+template<unsigned DIM>
+double FionaFarhadifarForce<DIM>::GetExtrusionPerimeterParameter()
+{
+    return mExtrusionPerimeterParameter;
+}
+
+template<unsigned DIM>
+double FionaFarhadifarForce<DIM>::GetExtrusionAreaParameter()
+{
+    return mExtrusionAreaParameter;
+}
+
+template<unsigned DIM>
 void FionaFarhadifarForce<DIM>::SetAreaElasticityParameter(double areaElasticityParameter)
 {
     mAreaElasticityParameter = areaElasticityParameter;
@@ -372,6 +331,25 @@ void FionaFarhadifarForce<DIM>::SetTargetAreaParameter(double targetAreaParamete
 }
 
 template<unsigned DIM>
+void FionaFarhadifarForce<DIM>::SetExtrusionLineTensionParameter(double ExtrusionLineTensionParameter)
+{
+    mExtrusionLineTensionParameter = ExtrusionLineTensionParameter;
+}
+
+template<unsigned DIM>
+void FionaFarhadifarForce<DIM>::SetExtrusionPerimeterParameter(double ExtrusionPerimeterParameter)
+{
+    mExtrusionPerimeterParameter = ExtrusionPerimeterParameter;
+}
+
+template<unsigned DIM>
+void FionaFarhadifarForce<DIM>::SetExtrusionAreaParameter(double ExtrusionAreaParameter)
+{
+    mExtrusionAreaParameter = ExtrusionAreaParameter;
+}
+
+
+template<unsigned DIM>
 void FionaFarhadifarForce<DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<AreaElasticityParameter>" << mAreaElasticityParameter << "</AreaElasticityParameter>\n";
@@ -379,6 +357,9 @@ void FionaFarhadifarForce<DIM>::OutputForceParameters(out_stream& rParamsFile)
     *rParamsFile << "\t\t\t<LineTensionParameter>" << mLineTensionParameter << "</LineTensionParameter>\n";
     *rParamsFile << "\t\t\t<BoundaryLineTensionParameter>" << mBoundaryLineTensionParameter << "</BoundaryLineTensionParameter>\n";
     *rParamsFile << "\t\t\t<TargetAreaParameter>" << mTargetAreaParameter << "</TargetAreaParameter>\n";
+    *rParamsFile << "\t\t\t<ExtrusionLineTensionParameter>" << mExtrusionLineTensionParameter << "</ExtrusionLineTensionParameter>\n";
+    *rParamsFile << "\t\t\t<ExtrusionPerimeterParameter>" << mExtrusionPerimeterParameter << "</ExtrusionPerimeterParameter>\n";
+    *rParamsFile << "\t\t\t<ExtrusionAreaParameter>" << mExtrusionAreaParameter << "</ExtrusionAreaParameter>\n";
 
     // Call method on direct parent class
     AbstractForce<DIM>::OutputForceParameters(rParamsFile);

@@ -78,7 +78,7 @@ class JulyTargetAreaModifier : public AbstractTargetAreaModifier<DIM>
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractTargetAreaModifier<DIM> >(*this);
-        archive & mGrowthDuration & mApoptosisDuration & mLecArea;
+        archive & mGrowthDuration & mApoptosisDuration & mLecArea & mLecShrinkingScale;
     }
 
     /**
@@ -92,6 +92,8 @@ class JulyTargetAreaModifier : public AbstractTargetAreaModifier<DIM>
     double mApoptosisDuration;
 
     double mLecArea;
+
+    double mLecShrinkingScale;
 
 public:
 
@@ -129,6 +131,20 @@ public:
      * @param growthDuration the new value of #mGrowthDuration
      */
     void SetGrowthDuration(double growthDuration);
+
+
+    /**
+     * @return #mLecShrinkingScale
+     */
+    double GetLecShrinkingScale();
+
+
+    /**
+     * Set #mLecShrinkingScale.
+     *
+     * @param LecShrinkingScale the new value of #mGrowthDuration
+     */
+    void SetLecShrinkingScale(double LecShrinkingScale);
 
     /**
      * @return #mApoptosisDuration
