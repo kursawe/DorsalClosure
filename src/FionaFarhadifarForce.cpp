@@ -169,7 +169,7 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
             // Add the force contribution from cell-cell and cell-boundary line tension (note the minus sign)
            if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<LecLabel>())
            {
-                line_tension_contribution -= (previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
+                line_tension_contribution -= (1)*(previous_edge_line_tension_parameter*previous_edge_gradient + next_edge_line_tension_parameter*next_edge_gradient);
 
                 if (target_areas[elem_index]>0)
                 {
@@ -205,6 +205,12 @@ void FionaFarhadifarForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>
 
                 
             }
+
+             if (p_cell_population->GetCellUsingLocationIndex(elem_index)->template HasCellProperty<LecLabel>())
+           {
+                perimeter_contractility_contribution*=1;
+           }
+
             
            
         }
